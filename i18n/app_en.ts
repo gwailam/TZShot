@@ -195,11 +195,6 @@
       <translation>Long Screenshot</translation>
     </message>
     <message>
-      <location filename="../src/widgets/capture_overlay_widget.cpp" line="317" />
-      <source>录制 GIF</source>
-      <translation>Record GIF</translation>
-    </message>
-    <message>
       <location filename="../src/widgets/capture_overlay_widget.cpp" line="170" />
       <location filename="../src/widgets/capture_overlay_widget.cpp" line="460" />
       <source>粗</source>
@@ -275,67 +270,6 @@
       <location filename="../src/ai_call/doubao_vision_call.cpp" line="462" />
       <source>流式请求失败</source>
       <translation>Streaming request failed</translation>
-    </message>
-  </context>
-  <context>
-    <name>GifRecordOverlayWidget</name>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="440" />
-      <source>完成录制</source>
-      <translation>Finish Recording</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="444" />
-      <source>取消录制</source>
-      <translation>Cancel Recording</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="626" />
-      <source>导出中</source>
-      <translation>Exporting</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="636" />
-      <source>正在生成 GIF</source>
-      <translation>Generating GIF</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="637" />
-      <source>已捕获 %1 帧</source>
-      <translation>Captured %1 frames</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="642" />
-      <source>REC</source>
-      <translation>REC</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="653" />
-      <source>GIF</source>
-      <translation>GIF</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/gif_record_overlay_widget.cpp" line="681" />
-      <source>帧</source>
-      <translation>frames</translation>
-    </message>
-  </context>
-  <context>
-    <name>GifRecordViewModel</name>
-    <message>
-      <location filename="../src/viewmodel/gif_record_view_model.cpp" line="49" />
-      <source>录制区域无效</source>
-      <translation>Invalid recording area</translation>
-    </message>
-    <message>
-      <location filename="../src/viewmodel/gif_record_view_model.cpp" line="97" />
-      <source>未采集到任何帧</source>
-      <translation>No frames were captured</translation>
-    </message>
-    <message>
-      <location filename="../src/viewmodel/gif_record_view_model.cpp" line="161" />
-      <source>GIF 编码失败，请检查保存路径或磁盘空间</source>
-      <translation>GIF encoding failed. Check the save path or available disk space.</translation>
     </message>
   </context>
   <context>
@@ -963,31 +897,6 @@
       <location filename="../src/widgets/settings_dialog.cpp" line="498" />
       <source>选择保存位置</source>
       <translation>Select Save Location</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/settings_dialog.cpp" line="509" />
-      <source>GIF 录制</source>
-      <translation>GIF Recording</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/settings_dialog.cpp" line="515" />
-      <source>体积预设</source>
-      <translation>Size Preset</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/settings_dialog.cpp" line="517" />
-      <source>高质量</source>
-      <translation>High Quality</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/settings_dialog.cpp" line="517" />
-      <source>均衡</source>
-      <translation>Balanced</translation>
-    </message>
-    <message>
-      <location filename="../src/widgets/settings_dialog.cpp" line="517" />
-      <source>小体积</source>
-      <translation>Small Size</translation>
     </message>
     <message>
       <location filename="../src/widgets/settings_dialog.cpp" line="527" />

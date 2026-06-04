@@ -58,8 +58,6 @@ set(SOURCES
     src/widgets/sticky_canvas_widget.h
     src/widgets/capture_overlay_widget.cpp
     src/widgets/capture_overlay_widget.h
-    src/widgets/gif_record_overlay_widget.cpp
-    src/widgets/gif_record_overlay_widget.h
     src/widgets/long_capture_controller.cpp
     src/widgets/long_capture_controller.h
     src/widgets/magnifier_widget.cpp
@@ -90,8 +88,6 @@ set(SOURCES
     src/viewmodel/ai_view_model.h
     src/viewmodel/storage_view_model.cpp
     src/viewmodel/storage_view_model.h
-    src/viewmodel/gif_record_view_model.cpp
-    src/viewmodel/gif_record_view_model.h
     src/viewmodel/scroll_capture_view_model.cpp
     src/viewmodel/scroll_capture_view_model.h
     src/viewmodel/ocr_view_model.cpp
@@ -99,12 +95,6 @@ set(SOURCES
     src/viewmodel/vision_view_model.cpp
     src/viewmodel/vision_view_model.h
 
-    # GIF Encoder
-    src/gif_encoder/gif.h
-    src/gif_encoder/gif_encoder.cpp
-    src/gif_encoder/gif_encoder.h
-    src/gif_encoder/gif_frame_grabber.cpp
-    src/gif_encoder/gif_frame_grabber.h
     src/scroll/scroll_stitcher.cpp
     src/scroll/scroll_stitcher.h
 
@@ -179,7 +169,6 @@ qt_add_executable(TZshot
 target_include_directories(TZshot PRIVATE
     src
     src/ai_call
-    src/gif_encoder
     src/ocr
     src/paint_board
     src/paint_board/shape

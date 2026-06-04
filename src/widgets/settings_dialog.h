@@ -8,7 +8,6 @@ class AIViewModel;
 class VisionViewModel;
 class StorageViewModel;
 class LanguageManager;
-class GifRecordViewModel;
 class OcrViewModel;
 class GlobalShortcut;
 class QListWidget;
@@ -29,7 +28,6 @@ public:
                    VisionViewModel *visionViewModel,
                    StorageViewModel *storageViewModel,
                    LanguageManager *languageManager,
-                   GifRecordViewModel *gifRecordViewModel,
                    OcrViewModel *ocrViewModel,
                    GlobalShortcut *globalShortcut,
                    QWidget *parent = nullptr);
@@ -55,7 +53,6 @@ private:
     QPointer<VisionViewModel> m_visionViewModel;
     QPointer<StorageViewModel> m_storageViewModel;
     QPointer<LanguageManager> m_languageManager;
-    QPointer<GifRecordViewModel> m_gifRecordViewModel;
     QPointer<OcrViewModel> m_ocrViewModel;
     QPointer<GlobalShortcut> m_globalShortcut;
 
@@ -72,7 +69,6 @@ private:
     QSpinBox *m_visionProxyPortSpin = nullptr;
     QLabel *m_savePathLabel = nullptr;
     QComboBox *m_languageCombo = nullptr;
-    QComboBox *m_gifPresetCombo = nullptr;
     QTextEdit *m_ocrSelfCheckText = nullptr;
     QWidget *m_hotkeyPage = nullptr;
 };

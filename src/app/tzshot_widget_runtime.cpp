@@ -8,13 +8,11 @@ TZShotWidgetRuntime::TZShotWidgetRuntime(TZShotServices &services, QObject *pare
     , m_captureOverlayWidget(&services.screenshotViewModel(),
                              &services.stickyViewModel(),
                              &services.storageViewModel(),
-                             &services.ocrViewModel(),
-                             &services.gifRecordViewModel())
+                             &services.ocrViewModel())
     , m_settingsDialog(&services.aiViewModel(),
                        &services.visionViewModel(),
                        &services.storageViewModel(),
                        &services.languageManager(),
-                       &services.gifRecordViewModel(),
                        &services.ocrViewModel(),
                        &services.globalShortcut())
     , m_aboutDialog()

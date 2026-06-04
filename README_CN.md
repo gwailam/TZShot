@@ -12,9 +12,9 @@
 | --- | --- |
 | ![AI 视觉理解](docs/images/ai-vision.png) | ![长截图](docs/images/long-capture.png) |
 
-| OCR 结果 | GIF 录制 |
-| --- | --- |
-| ![OCR 结果](docs/images/ocr-result.png) | ![GIF 录制](docs/images/gif-record.png) |
+| OCR 结果 |
+| --- |
+| ![OCR 结果](docs/images/ocr-result.png) |
 
 ## 开源许可
 
@@ -23,7 +23,7 @@
 
 ## 项目简介
 
-`TZshot` 是一个基于 **Qt 6 Widgets + C++** 的截图与贴图工具，支持多屏截图、框选标注、贴图编辑、长截图、OCR、GIF 录制、全局快捷键、系统托盘、AI 图像编辑和 AI 图像理解。
+`TZshot` 是一个基于 **Qt 6 Widgets + C++** 的截图与贴图工具，支持多屏截图、框选标注、贴图编辑、长截图、OCR、全局快捷键、系统托盘、AI 图像编辑和 AI 图像理解。
 
 ## 主要功能
 
@@ -44,14 +44,12 @@
   - 贴图到桌面
   - OCR 识别
   - 长截图
-  - GIF 录制
 - 贴图窗口
   - 拖拽、透明度调整
   - 缩放、旋转、镜像、1:1 恢复
   - 标注、OCR、右键菜单
   - AI 图像编辑与 AI 图像理解
 - 长截图控制条与预览浮窗
-- GIF 录制
 - OCR 结果浮窗
 - 全局快捷键
 - 系统托盘菜单
@@ -74,7 +72,7 @@
 - `src/widgets/`
   - 截图浮层、贴图窗口、设置窗口、OCR 结果窗、关于窗口等界面层
 - `src/viewmodel/`
-  - 截图、贴图、长截图、GIF、OCR、存储、AI 等业务逻辑
+  - 截图、贴图、长截图、OCR、存储、AI 等业务逻辑
 - `src/model/`
   - 桌面快照、应用设置
 - `src/paint_board/shape/`
@@ -192,12 +190,11 @@ Linux 运行：
 
 - Linux 全局快捷键目前基于 X11，暂不覆盖 Wayland 原生实现
 - 置顶浮层与贴图窗口体验目前以 Windows 最完整
-- GIF、OCR 与长截图仍可继续做跨平台增强
+- OCR 与长截图仍可继续做跨平台增强
 
 ## 贡献与安全提示
 
 - 请勿提交真实的 `API Key`、令牌或个人隐私数据
 - 建议统一使用 `UTF-8（无 BOM）` 与 `LF`
 - 修改第三方依赖时，请同步补充许可证说明
-
 

@@ -1,10 +1,8 @@
 #include "widgets/capture_overlay_widget.h"
 
-#include "widgets/gif_record_overlay_widget.h"
 #include "widgets/magnifier_widget.h"
 #include "widgets/sticky_canvas_widget.h"
 #include "widgets/widget_window_bridge.h"
-#include "viewmodel/gif_record_view_model.h"
 #include "viewmodel/ocr_view_model.h"
 #include "viewmodel/screenshot_view_model.h"
 #include "viewmodel/sticky_view_model.h"
@@ -195,7 +193,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
                                            StickyViewModel *stickyViewModel,
                                            StorageViewModel *storageViewModel,
                                            OcrViewModel *ocrViewModel,
-                                           GifRecordViewModel *gifRecordViewModel,
                                            WidgetWindowBridge *widgetWindowBridge,
                                            QWidget *parent)
     : QWidget(parent)
@@ -203,7 +200,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     , m_stickyViewModel(stickyViewModel)
     , m_storageViewModel(storageViewModel)
     , m_ocrViewModel(ocrViewModel)
-    , m_gifRecordViewModel(gifRecordViewModel)
     , m_widgetWindowBridge(widgetWindowBridge)
 {
     m_annotationText.clear();
@@ -416,7 +412,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     m_stickyButton = createToolbarButton(QStringLiteral(":/resource/img/lc_pin.svg"), tr("贴图"), m_toolbar);
     m_ocrButton = createToolbarButton(QStringLiteral(":/resource/img/lc_ocr.svg"), tr("OCR"), m_toolbar);
     m_longCaptureButton = createToolbarButton(QStringLiteral(":/resource/img/lc_longshot.svg"), tr("长截图"), m_toolbar);
-    m_gifButton = createToolbarButton(QStringLiteral(":/resource/img/lc_gif_record.svg"), tr("录制 GIF"), m_toolbar);
     m_cancelButton = createToolbarButton(QStringLiteral(":/resource/img/lc_x.svg"), tr("取消"), m_toolbar);
 
     const QVector<QToolButton*> drawButtons {
@@ -436,7 +431,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     toolbarLayout->addWidget(m_stickyButton);
     toolbarLayout->addWidget(m_ocrButton);
     toolbarLayout->addWidget(m_longCaptureButton);
-    toolbarLayout->addWidget(m_gifButton);
     auto *divider2 = new QFrame(m_toolbar);
     divider2->setObjectName(QStringLiteral("captureOverlayToolbarDivider"));
     divider2->setFixedSize(1, 18);
@@ -450,7 +444,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     connect(m_stickyButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Sticky); });
     connect(m_ocrButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Ocr); });
     connect(m_longCaptureButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::LongCapture); });
-    connect(m_gifButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Gif); });
     connect(m_cancelButton, &QToolButton::clicked, this, [this]() { finishCapture(); });
     connect(m_undoButton, &QToolButton::clicked, this, [this]() {
         if (m_canvas) {
@@ -489,7 +482,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
         m_stickyButton,
         m_ocrButton,
         m_longCaptureButton,
-        m_gifButton,
         m_cancelButton
     };
     for (QToolButton *button : tipButtons) {
@@ -497,20 +489,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
             button->installEventFilter(this);
         }
     }
-
-    m_gifOverlay = new GifRecordOverlayWidget();
-    connect(this, &QObject::destroyed, m_gifOverlay, &QObject::deleteLater);
-    connect(m_gifOverlay, &GifRecordOverlayWidget::stopRequested, this, [this]() {
-        if (m_gifRecordViewModel) {
-            m_gifRecordViewModel->stopRecording();
-        }
-    });
-    connect(m_gifOverlay, &GifRecordOverlayWidget::cancelRequested, this, [this]() {
-        if (m_gifRecordViewModel) {
-            m_gifRecordViewModel->cancelRecording();
-        }
-        finishCapture();
-    });
 
     m_tipBubble = new QWidget(this);
     m_tipBubble->setObjectName(QStringLiteral("captureOverlayTipBubble"));
@@ -523,37 +501,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     m_tipLabel->setObjectName(QStringLiteral("captureOverlayTipLabel"));
     tipLayout->addWidget(m_tipLabel);
     m_tipBubble->hide();
-
-    if (m_gifRecordViewModel) {
-        connect(m_gifRecordViewModel, &GifRecordViewModel::frameCountChanged, this, [this]() {
-            if (m_gifOverlay) {
-                m_gifOverlay->setFrameCount(m_gifRecordViewModel->frameCount());
-            }
-        });
-        connect(m_gifRecordViewModel, &GifRecordViewModel::elapsedSecsChanged, this, [this]() {
-            if (m_gifOverlay) {
-                m_gifOverlay->setElapsedSecs(m_gifRecordViewModel->elapsedSecs());
-            }
-        });
-        connect(m_gifRecordViewModel, &GifRecordViewModel::isRecordingChanged, this, [this]() {
-            if (m_gifOverlay) {
-                m_gifOverlay->setRecordingState(m_gifRecordViewModel->isRecording(),
-                                                m_gifRecordViewModel->isEncoding());
-            }
-        });
-        connect(m_gifRecordViewModel, &GifRecordViewModel::isEncodingChanged, this, [this]() {
-            if (m_gifOverlay) {
-                m_gifOverlay->setRecordingState(m_gifRecordViewModel->isRecording(),
-                                                m_gifRecordViewModel->isEncoding());
-            }
-        });
-        connect(m_gifRecordViewModel, &GifRecordViewModel::encodingFinished, this, [this](const QString &) {
-            finishCapture();
-        });
-        connect(m_gifRecordViewModel, &GifRecordViewModel::encodingFailed, this, [this](const QString &) {
-            finishCapture();
-        });
-    }
 
     if (!m_colorButtons.isEmpty()) {
         m_colorButtons.first()->setChecked(true);
@@ -651,18 +598,19 @@ void CaptureOverlayWidget::resizeEvent(QResizeEvent *event)
 
 void CaptureOverlayWidget::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() != Qt::LeftButton) {
-        QWidget::mousePressEvent(event);
-        return;
-    }
-
-    if (m_gifRecordingMode) {
-        event->accept();
-        return;
-    }
-
     if (m_canvas && m_canvas->drawingEnabled()) {
         event->ignore();
+        return;
+    }
+
+    if (event->button() == Qt::RightButton) {
+        event->accept();
+        finishCapture();
+        return;
+    }
+
+    if (event->button() != Qt::LeftButton) {
+        QWidget::mousePressEvent(event);
         return;
     }
 
@@ -681,15 +629,6 @@ void CaptureOverlayWidget::mousePressEvent(QMouseEvent *event)
 void CaptureOverlayWidget::mouseMoveEvent(QMouseEvent *event)
 {
     const QPoint pos = event->position().toPoint();
-
-    if (m_gifRecordingMode) {
-        m_hasPendingMagnifierPos = false;
-        if (m_magnifierUpdateTimer) {
-            m_magnifierUpdateTimer->stop();
-        }
-        QWidget::mouseMoveEvent(event);
-        return;
-    }
 
     if (m_canvas && m_canvas->drawingEnabled()) {
         m_hasPendingMagnifierPos = false;
@@ -733,10 +672,6 @@ void CaptureOverlayWidget::mouseReleaseEvent(QMouseEvent *event)
     }
 
     if (event->button() == Qt::LeftButton) {
-        if (m_gifRecordingMode) {
-            event->accept();
-            return;
-        }
         const QRect previousSelection = currentSelectionRect();
         m_selection.endInteraction();
         m_selection.updateHover(event->position().toPoint());
@@ -772,6 +707,33 @@ void CaptureOverlayWidget::mouseReleaseEvent(QMouseEvent *event)
     QWidget::mouseReleaseEvent(event);
 }
 
+void CaptureOverlayWidget::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (event->button() != Qt::LeftButton) {
+        QWidget::mouseDoubleClickEvent(event);
+        return;
+    }
+
+    if (m_canvas && m_canvas->drawingEnabled()) {
+        QWidget::mouseDoubleClickEvent(event);
+        return;
+    }
+
+    if (m_inlineTextPanel && m_inlineTextPanel->isVisible()) {
+        QWidget::mouseDoubleClickEvent(event);
+        return;
+    }
+
+    const QRect selection = currentSelectionRect();
+    if (!selection.isEmpty() && selection.contains(event->position().toPoint())) {
+        event->accept();
+        performAction(CaptureAction::Copy);
+        return;
+    }
+
+    QWidget::mouseDoubleClickEvent(event);
+}
+
 void CaptureOverlayWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event
@@ -786,9 +748,6 @@ void CaptureOverlayWidget::keyPressEvent(QKeyEvent *event)
 
     switch (event->key()) {
     case Qt::Key_Escape:
-        if (m_gifRecordingMode && m_gifRecordViewModel) {
-            m_gifRecordViewModel->cancelRecording();
-        }
         finishCapture();
         event->accept();
         return;
@@ -998,11 +957,6 @@ void CaptureOverlayWidget::resetState()
     if (m_magnifier) {
         m_magnifier->hide();
     }
-    if (m_gifOverlay) {
-        m_gifOverlay->resetOverlay();
-    }
-    m_gifRecordingMode = false;
-    m_gifGlobalCaptureRect = {};
     setCursor(Qt::CrossCursor);
     update(rect());
 }
@@ -1152,7 +1106,7 @@ void CaptureOverlayWidget::updateToolOptionsPanel()
         return;
     }
 
-    const bool visible = m_toolbar->isVisible() && m_canvas->drawingEnabled() && !m_gifRecordingMode;
+    const bool visible = m_toolbar->isVisible() && m_canvas->drawingEnabled();
     m_toolOptions->setVisible(visible);
     if (!visible) {
         cancelInlineText();
@@ -1406,33 +1360,6 @@ void CaptureOverlayWidget::performAction(CaptureAction action)
         }
         finishCapture();
         return;
-    case CaptureAction::Gif:
-        if (!m_gifRecordViewModel) {
-            break;
-        }
-        m_gifGlobalCaptureRect = globalRect;
-        m_gifRecordingMode = true;
-        m_toolbar->hide();
-        if (m_toolOptions) {
-            m_toolOptions->hide();
-        }
-        if (m_canvas) {
-            m_canvas->setDrawingEnabled(false);
-        }
-        hideTipBubble();
-        if (m_magnifier) {
-            m_magnifier->hide();
-        }
-        if (m_gifOverlay) {
-            m_gifOverlay->setCaptureRect(globalRect);
-            m_gifOverlay->setElapsedSecs(0);
-            m_gifOverlay->setFrameCount(0);
-            m_gifOverlay->setRecordingState(true, false);
-        }
-        hide();
-        qApp->processEvents();
-        m_gifRecordViewModel->startRecording(globalRect.x(), globalRect.y(), globalRect.width(), globalRect.height());
-        return;
     }
 
     finishCapture();
@@ -1461,5 +1388,3 @@ QString CaptureOverlayWidget::defaultSaveFilePath() const
                                  .arg(QDateTime::currentDateTime().toString(QStringLiteral("yyyyMMdd_HHmmss")));
     return QDir(baseDir).filePath(fileName);
 }
-
-

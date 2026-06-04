@@ -22,8 +22,6 @@ class ScreenshotViewModel;
 class StickyViewModel;
 class StorageViewModel;
 class OcrViewModel;
-class GifRecordViewModel;
-class GifRecordOverlayWidget;
 class MagnifierWidget;
 class WidgetWindowBridge;
 class StickyCanvasWidget;
@@ -37,7 +35,6 @@ public:
                                   StickyViewModel *stickyViewModel,
                                   StorageViewModel *storageViewModel,
                                   OcrViewModel *ocrViewModel,
-                                  GifRecordViewModel *gifRecordViewModel = nullptr,
                                   WidgetWindowBridge *widgetWindowBridge = nullptr,
                                   QWidget *parent = nullptr);
 
@@ -51,6 +48,7 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -61,8 +59,7 @@ private:
         Save,
         Sticky,
         Ocr,
-        LongCapture,
-        Gif
+        LongCapture
     };
 
     void resetState();
@@ -98,14 +95,11 @@ private:
     QPointer<StickyViewModel> m_stickyViewModel;
     QPointer<StorageViewModel> m_storageViewModel;
     QPointer<OcrViewModel> m_ocrViewModel;
-    QPointer<GifRecordViewModel> m_gifRecordViewModel;
     QPointer<WidgetWindowBridge> m_widgetWindowBridge;
 
     QRect m_virtualGeometry;
     CaptureAction m_defaultAction = CaptureAction::Copy;
     SelectionMaskController m_selection;
-    bool m_gifRecordingMode = false;
-    QRect m_gifGlobalCaptureRect;
 
     QWidget *m_toolbar = nullptr;
     StickyCanvasWidget *m_canvas = nullptr;
@@ -121,7 +115,6 @@ private:
     QToolButton *m_stickyButton = nullptr;
     QToolButton *m_ocrButton = nullptr;
     QToolButton *m_longCaptureButton = nullptr;
-    QToolButton *m_gifButton = nullptr;
     QToolButton *m_cancelButton = nullptr;
     QToolButton *m_pencilButton = nullptr;
     QToolButton *m_rectButton = nullptr;
@@ -146,7 +139,6 @@ private:
     int m_inlineOriginalSize = 6;
     bool m_inlineOriginalTextBackground = false;
 
-    GifRecordOverlayWidget *m_gifOverlay = nullptr;
     MagnifierWidget *m_magnifier = nullptr;
     QWidget *m_tipBubble = nullptr;
     QLabel *m_tipLabel = nullptr;

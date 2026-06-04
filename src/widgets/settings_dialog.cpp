@@ -2,7 +2,6 @@
 
 #include "language_manager.h"
 #include "viewmodel/ai_view_model.h"
-#include "viewmodel/gif_record_view_model.h"
 #include "viewmodel/ocr_view_model.h"
 #include "viewmodel/storage_view_model.h"
 #include "viewmodel/vision_view_model.h"
@@ -188,7 +187,6 @@ SettingsDialog::SettingsDialog(AIViewModel *aiViewModel,
                                VisionViewModel *visionViewModel,
                                StorageViewModel *storageViewModel,
                                LanguageManager *languageManager,
-                               GifRecordViewModel *gifRecordViewModel,
                                OcrViewModel *ocrViewModel,
                                GlobalShortcut *globalShortcut,
                                QWidget *parent)
@@ -197,7 +195,6 @@ SettingsDialog::SettingsDialog(AIViewModel *aiViewModel,
     , m_visionViewModel(visionViewModel)
     , m_storageViewModel(storageViewModel)
     , m_languageManager(languageManager)
-    , m_gifRecordViewModel(gifRecordViewModel)
     , m_ocrViewModel(ocrViewModel)
     , m_globalShortcut(globalShortcut)
 {
@@ -502,24 +499,6 @@ QWidget *SettingsDialog::buildGeneralPage()
             }
         });
         grid->addWidget(browse, 0, 2);
-        outer->addWidget(card);
-    }
-
-    outer->addSpacing(8);
-    outer->addWidget(createSectionTitle(tr("GIF 录制")));
-    {
-        auto *card = createCard();
-        auto *grid = new QGridLayout(card);
-        grid->setContentsMargins(16, 16, 16, 16);
-        grid->setHorizontalSpacing(12);
-        addRowLabel(grid, 0, tr("体积预设"), card);
-        m_gifPresetCombo = new SettingsComboBox(card);
-        m_gifPresetCombo->addItems({ tr("高质量"), tr("均衡"), tr("小体积") });
-        if (m_gifRecordViewModel) m_gifPresetCombo->setCurrentIndex(m_gifRecordViewModel->qualityPreset());
-        connect(m_gifPresetCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int index) {
-            if (m_gifRecordViewModel) m_gifRecordViewModel->setQualityPreset(index);
-        });
-        grid->addWidget(m_gifPresetCombo, 0, 1);
         outer->addWidget(card);
     }
 

@@ -12,9 +12,9 @@
 | --- | --- |
 | ![AI Vision](docs/images/ai-vision.png) | ![Long Capture](docs/images/long-capture.png) |
 
-| OCR Result | GIF Record |
-| --- | --- |
-| ![OCR Result](docs/images/ocr-result.png) | ![GIF Record](docs/images/gif-record.png) |
+| OCR Result |
+| --- |
+| ![OCR Result](docs/images/ocr-result.png) |
 
 ## License
 
@@ -23,7 +23,7 @@ See [LICENSE](./LICENSE).
 
 ## Overview
 
-`TZshot` is a screenshot and pin-image utility built with **Qt 6 Widgets + C++**. It supports multi-screen capture, region annotation, sticky image editing, long screenshots, OCR, GIF recording, global shortcuts, tray integration, AI image editing, and AI visual understanding.
+`TZshot` is a screenshot and pin-image utility built with **Qt 6 Widgets + C++**. It supports multi-screen capture, region annotation, sticky image editing, long screenshots, OCR, global shortcuts, tray integration, AI image editing, and AI visual understanding.
 
 ## Features
 
@@ -44,14 +44,12 @@ See [LICENSE](./LICENSE).
   - Pin to desktop
   - OCR
   - Long screenshot
-  - GIF recording
 - Sticky window
   - Dragging and opacity control
   - Zoom, rotate, mirror, reset to 1:1
   - Annotation, OCR, context menu actions
   - AI image editing and AI visual understanding
 - Long screenshot toolbar with floating preview
-- GIF recording
 - OCR result window
 - Global shortcuts
 - System tray menu
@@ -74,7 +72,7 @@ See [LICENSE](./LICENSE).
 - `src/widgets/`
   - Capture overlay, sticky windows, settings dialog, OCR result window, about dialog, and related UI
 - `src/viewmodel/`
-  - Business logic for capture, sticky images, long screenshot, GIF, OCR, storage, and AI
+  - Business logic for capture, sticky images, long screenshot, OCR, storage, and AI
 - `src/model/`
   - Desktop snapshot and persisted app settings
 - `src/paint_board/shape/`
@@ -192,11 +190,10 @@ If they are missing, OCR will fail at runtime with `Tesseract Init failed: no us
 
 - Linux global shortcuts currently rely on X11 and do not yet cover native Wayland support
 - Floating overlay and sticky window experience is currently most complete on Windows
-- GIF, OCR, and long screenshot flows still have room for more cross-platform refinement
+- OCR and long screenshot flows still have room for more cross-platform refinement
 
 ## Contributing and Security
 
 - Do not commit real `API Key`s, tokens, or private data
 - Use `UTF-8 (no BOM)` and `LF` line endings when possible
 - When updating third-party dependencies, include their license notices
-

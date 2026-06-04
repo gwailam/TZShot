@@ -9,7 +9,6 @@
 #include "shortcut_key/globalshortcut.h"
 #include "sticky_image_store.h"
 #include "viewmodel/ai_view_model.h"
-#include "viewmodel/gif_record_view_model.h"
 #include "viewmodel/ocr_view_model.h"
 #include "viewmodel/screenshot_view_model.h"
 #include "viewmodel/scroll_capture_view_model.h"
@@ -32,7 +31,6 @@ public:
     AIViewModel& aiViewModel() { return m_aiViewModel; }
     StorageViewModel& storageViewModel() { return m_storageViewModel; }
     LanguageManager& languageManager() { return m_languageManager; }
-    GifRecordViewModel& gifRecordViewModel() { return m_gifRecordViewModel; }
     ScrollCaptureViewModel& scrollCaptureViewModel() { return m_scrollCaptureViewModel; }
     OcrViewModel& ocrViewModel() { return m_ocrViewModel; }
     VisionViewModel& visionViewModel() { return m_visionViewModel; }
@@ -47,7 +45,6 @@ private:
     AIViewModel m_aiViewModel;
     StorageViewModel m_storageViewModel;
     LanguageManager m_languageManager;
-    GifRecordViewModel m_gifRecordViewModel;
     ScrollCaptureViewModel m_scrollCaptureViewModel;
     OcrViewModel m_ocrViewModel;
     VisionViewModel m_visionViewModel;

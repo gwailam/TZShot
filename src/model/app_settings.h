@@ -46,10 +46,6 @@ public:
     QString savePath() const;
     void    setSavePath(const QString &path);
 
-    // GIF 体积质量预设：0=高质量，1=均衡，2=小体积
-    int  gifQualityPreset() const;
-    void setGifQualityPreset(int preset);
-
 private:
     QString m_apiKey;
     QString m_visionApiKey;
@@ -63,7 +59,6 @@ private:
     int     m_selectedModel = 0;
     QString m_language      = "zh_CN";
     QString m_savePath;
-    int     m_gifQualityPreset = 1;
 };
 
 #endif // APP_SETTINGS_H
