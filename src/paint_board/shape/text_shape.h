@@ -16,7 +16,9 @@ public:
     void setEndPoint(const QPoint& point) override;
     void draw(QPainter* painter) override;
     bool contains(const QPoint &point) const;
-    QRect boundingRect() const;
+    QRect boundingRect() const override;
+    bool contains(const QPoint& point, int tolerance) const override;
+    void translate(const QPoint& offset) override;
     QPoint anchorPoint() const { return m_point; }
     QString text() const { return m_text; }
     bool withBackground() const { return m_withBackground; }

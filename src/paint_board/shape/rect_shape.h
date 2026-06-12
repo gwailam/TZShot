@@ -11,6 +11,7 @@ public:
               int size                 = 2);
 
     void draw(QPainter* painter) override;
+    bool contains(const QPoint& point, int tolerance) const override;
 };
 
 #endif // RECTSHAPE_H

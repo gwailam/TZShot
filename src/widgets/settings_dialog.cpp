@@ -347,6 +347,7 @@ QWidget *SettingsDialog::buildGeneralPage()
 
         addRowLabel(grid, 1, QStringLiteral("API Key"), card);
         m_apiKeyEdit = new QLineEdit(card);
+        m_apiKeyEdit->setEchoMode(QLineEdit::PasswordEchoOnEdit);  // 遮蔽 API Key，避免旁观/录屏泄露
         const QString sharedApiKey = m_aiViewModel && !m_aiViewModel->apiKey().isEmpty()
             ? m_aiViewModel->apiKey()
             : (m_visionViewModel ? m_visionViewModel->apiKey() : QString());

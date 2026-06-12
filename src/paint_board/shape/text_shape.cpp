@@ -98,3 +98,14 @@ bool TextShape::contains(const QPoint &point) const
 {
     return boundingRect().adjusted(-2, -2, 2, 2).contains(point);
 }
+
+bool TextShape::contains(const QPoint &point, int tolerance) const
+{
+    const int margin = qMax(2, tolerance);
+    return boundingRect().adjusted(-margin, -margin, margin, margin).contains(point);
+}
+
+void TextShape::translate(const QPoint &offset)
+{
+    m_point += offset;
+}

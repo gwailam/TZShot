@@ -198,9 +198,11 @@ OcrEngine::OcrEngine()
 
     for (const QString &tessdataDir : tessdataDirs) {
         m_api->End();
-        qputenv("TESSDATA_PREFIX", tessdataDir.toUtf8());
-
-        if (m_api->Init(nullptr, "chi_sim+eng") == 0) {
+        // 通过 Init 的 datapath 入参指定 tessdata 目录，替代 qputenv("TESSDATA_PREFIX")。
+        // OcrEngine 在 QtConcurrent 工作线程构造，qputenv 修改进程级环境变量会与主
+        // 线程读环境产生数据竞争；改用入参可彻底规避。
+        const QByteArray dataPath = tessdataDir.toUtf8();
+        if (m_api->Init(dataPath.constData(), "chi_sim+eng") == 0) {
             initOk = true;
             selectedTessdataDir = tessdataDir;
             break;

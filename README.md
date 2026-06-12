@@ -186,6 +186,8 @@ If they are missing, OCR will fail at runtime with `Tesseract Init failed: no us
   - `App/language`
   - `ImageSaver/savePath`
 
+> **Security note:** `AI/apiKey` and `Vision/apiKey` are stored in **plaintext** via `QSettings` (on Windows, the registry under `HKCU\Software\...`); they are not encrypted at rest. On shared or untrusted machines, be aware of the exposure risk, and consider protecting them with an OS credential store (e.g. Windows DPAPI / Qt Keychain).
+
 ## Notes
 
 - Linux global shortcuts currently rely on X11 and do not yet cover native Wayland support

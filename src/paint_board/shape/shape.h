@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QColor>
 #include <QPoint>
+#include <QRect>
 
 class Shape
 {
@@ -14,6 +15,10 @@ public:
     virtual void draw(QPainter* painter) = 0;
     // 纯虚函数：更新终点（用于绘制预览）
     virtual void setEndPoint(const QPoint& point) = 0;
+
+    virtual QRect boundingRect() const;
+    virtual bool contains(const QPoint& point, int tolerance) const;
+    virtual void translate(const QPoint& offset);
 
     void setColor(const QColor& color) { m_color = color; }
     QColor color() const { return m_color; }

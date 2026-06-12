@@ -13,6 +13,8 @@ public:
                int size                 = 2);
 
     void draw(QPainter* painter) override;
+    QRect boundingRect() const override;
+    bool contains(const QPoint& point, int tolerance) const override;
 
 private:
     static constexpr double ARROW_HEAD_LENGTH = 15.0; // 箭头头部长度

@@ -73,6 +73,56 @@ void MosaicShape::draw(QPainter* painter)
     painter->restore();
 }
 
+QRect MosaicShape::boundingRect() const
+{
+    QRect bounds;
+    bool hasBounds = false;
+    for (const QPoint &point : m_points) {
+        const QRect pointRect(point.x() - m_brushRadius,
+                              point.y() - m_brushRadius,
+                              m_brushRadius * 2,
+                              m_brushRadius * 2);
+        bounds = hasBounds ? bounds.united(pointRect) : pointRect;
+        hasBounds = true;
+    }
+    for (auto it = m_blocks.constBegin(); it != m_blocks.constEnd(); ++it) {
+        const QRect blockRect(it.key(), QSize(m_blockSize, m_blockSize));
+        bounds = hasBounds ? bounds.united(blockRect) : blockRect;
+        hasBounds = true;
+    }
+    return bounds;
+}
+
+bool MosaicShape::contains(const QPoint &point, int tolerance) const
+{
+    const int hitRadius = m_brushRadius + qMax(2, tolerance);
+    for (const QPoint &pathPoint : m_points) {
+        const QPoint delta = point - pathPoint;
+        if (delta.x() * delta.x() + delta.y() * delta.y() <= hitRadius * hitRadius) {
+            return true;
+        }
+    }
+    return boundingRect().adjusted(-tolerance, -tolerance, tolerance, tolerance).contains(point);
+}
+
+void MosaicShape::translate(const QPoint &offset)
+{
+    if (offset.isNull()) {
+        return;
+    }
+
+    for (QPoint &point : m_points) {
+        point += offset;
+    }
+
+    QHash<QPoint, QColor> movedBlocks;
+    movedBlocks.reserve(m_blocks.size());
+    for (auto it = m_blocks.constBegin(); it != m_blocks.constEnd(); ++it) {
+        movedBlocks.insert(it.key() + offset, it.value());
+    }
+    m_blocks = movedBlocks;
+}
+
 void MosaicShape::applyMosaicAt(const QPoint& center)
 {
     if (m_canvasSnapshot.isNull())

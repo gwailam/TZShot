@@ -23,6 +23,11 @@ bool QwenAICall::sendRequest(const QString &prompt, const QJsonObject &params)
         return false;
     }
 
+    if (!isAllowedApiUrl(m_apiUrl)) {
+        setError(AIErrorType::ParamError, tr("API 地址必须使用 HTTPS"));
+        return false;
+    }
+
     // 取消之前的请求
     cancelRequest();
 

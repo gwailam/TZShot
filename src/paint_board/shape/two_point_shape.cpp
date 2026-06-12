@@ -23,3 +23,15 @@ QPoint TwoPointShape::endPoint() const
 {
     return m_endPoint;
 }
+
+QRect TwoPointShape::boundingRect() const
+{
+    const int margin = qMax(2, m_size / 2 + 1);
+    return QRect(m_startPoint, m_endPoint).normalized().adjusted(-margin, -margin, margin, margin);
+}
+
+void TwoPointShape::translate(const QPoint &offset)
+{
+    m_startPoint += offset;
+    m_endPoint += offset;
+}

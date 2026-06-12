@@ -53,6 +53,10 @@ AppSettings::AppSettings()
 }
 
 // ── AI 配置 ───────────────────────────────────────────────
+// 安全说明：API Key（AI/apiKey、Vision/apiKey）以明文持久化到 QSettings
+// （Windows 下为注册表 HKCU\Software\...）。当前未做加密，请在共享/受控
+// 环境中注意泄露风险；如需更强保护可接入 OS 凭据库（Windows DPAPI /
+// Qt Keychain 等）。
 
 QString AppSettings::apiKey() const
 {

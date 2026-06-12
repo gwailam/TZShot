@@ -48,8 +48,8 @@ signals:
     // 调用方应检查 oldImageUrl 是否与自己的 imageUrl 一致再替换
     void signalRequestComplete(const QString &oldImageUrl, const QString &newImageUrl);
 
-    // AI 请求失败，返回错误描述
-    void signalRequestFailed(const QString &errorMsg);
+    // AI 请求失败，imageUrl 为请求时的原图 URL，调用方据此判断是否是自己的请求
+    void signalRequestFailed(const QString &imageUrl, const QString &errorMsg);
 
     void isLoadingChanged(bool loading);
 
@@ -61,6 +61,7 @@ private:
     StickyImageStore &m_store;
     AICallBase       *m_aiCall   = nullptr;
     bool              m_loading  = false;
+    QString           m_pendingImageUrl;   // 当前在途请求的原图 URL，用于失败信号定向分发
 };
 
 #endif // AI_VIEW_MODEL_H

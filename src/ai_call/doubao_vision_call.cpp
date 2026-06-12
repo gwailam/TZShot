@@ -106,6 +106,10 @@ bool DoubaoVisionCall::sendRequest(const QString &prompt, const QJsonObject &par
         setError(AIErrorType::ParamError, tr("缺少图片数据"));
         return false;
     }
+    if (!isAllowedApiUrl(m_apiUrl)) {
+        setError(AIErrorType::ParamError, tr("API 地址必须使用 HTTPS"));
+        return false;
+    }
 
     cancelRequest();
     resetStreamState();

@@ -186,6 +186,8 @@ Linux 运行：
   - `App/language`
   - `ImageSaver/savePath`
 
+> **安全说明：** `AI/apiKey` 与 `Vision/apiKey` 通过 `QSettings` 以**明文**存储（Windows 下位于注册表 `HKCU\Software\...`），未做加密。在共享或不受信任的机器上请注意泄露风险；如需更强保护，可接入操作系统凭据库（如 Windows DPAPI / Qt Keychain）。
+
 ## 已知说明
 
 - Linux 全局快捷键目前基于 X11，暂不覆盖 Wayland 原生实现

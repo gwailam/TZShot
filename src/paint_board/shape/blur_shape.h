@@ -15,6 +15,9 @@ public:
 
     void setEndPoint(const QPoint& point) override;
     void draw(QPainter* painter) override;
+    QRect boundingRect() const override;
+    bool contains(const QPoint& point, int tolerance) const override;
+    void translate(const QPoint& offset) override;
     void setCanvasSnapshot(const QImage& snapshot);
 
 private:

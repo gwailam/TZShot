@@ -2,6 +2,7 @@
 
 #include <QFont>
 #include <QFontMetrics>
+#include <QLineF>
 
 NumberShape::NumberShape(const QPoint& center,
                          int number,
@@ -43,4 +44,24 @@ void NumberShape::draw(QPainter* painter)
     painter->drawText(circleRect, Qt::AlignCenter, QString::number(m_number));
 
     painter->restore();
+}
+
+QRect NumberShape::boundingRect() const
+{
+    const int r = qMax(10, m_size * 2 + 6);
+    return QRect(m_center.x() - r,
+                 m_center.y() - r,
+                 r * 2,
+                 r * 2);
+}
+
+bool NumberShape::contains(const QPoint &point, int tolerance) const
+{
+    const int r = qMax(10, m_size * 2 + 6) + qMax(2, tolerance);
+    return QLineF(QPointF(point), QPointF(m_center)).length() <= r;
+}
+
+void NumberShape::translate(const QPoint &offset)
+{
+    m_center += offset;
 }

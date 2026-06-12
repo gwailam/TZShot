@@ -737,6 +737,15 @@ void CaptureOverlayWidget::mouseDoubleClickEvent(QMouseEvent *event)
 void CaptureOverlayWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event
+        && (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
+        && (!m_inlineTextPanel || !m_inlineTextPanel->isVisible())
+        && m_canvas
+        && m_canvas->deleteSelectedShape()) {
+        event->accept();
+        return;
+    }
+
+    if (event
         && event->matches(QKeySequence::Undo)
         && (!m_inlineTextPanel || !m_inlineTextPanel->isVisible())
         && m_canvas
@@ -972,6 +981,7 @@ void CaptureOverlayWidget::refreshSnapshot()
     m_virtualGeometry = m_screenCapture->virtualGeometry();
     if (m_canvas) {
         m_canvas->setGeometry(QRect(QPoint(0, 0), size()));
+        m_canvas->setAnnotationBounds(currentSelectionRect());
         m_canvas->setBackgroundImage(m_screenCapture->desktopSnapshot().toImage());
     }
     if (m_magnifier) {
@@ -1026,13 +1036,26 @@ QImage CaptureOverlayWidget::currentOutputImage() const
         return {};
     }
 
-    if (m_canvas && m_canvas->hasAnnotations()) {
-        const QImage composited = m_canvas->compositedImage(selection);
-        if (!composited.isNull()) {
-            return composited;
-        }
+    QImage base = currentCaptureImage();   // 物理像素分辨率
+    if (base.isNull() || !m_canvas || !m_canvas->hasAnnotations()) {
+        return base;
     }
-    return currentCaptureImage();
+
+    // 将标注层按 物理/逻辑 比例叠加到物理分辨率底图上，保证带标注与不带标注
+    // 的输出分辨率一致（修复高 DPI 下带标注复制/保存被降采样的问题）。
+    const qreal sx = selection.width() > 0
+        ? qreal(base.width()) / selection.width() : 1.0;
+    const qreal sy = selection.height() > 0
+        ? qreal(base.height()) / selection.height() : 1.0;
+
+    QPainter painter(&base);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter.scale(sx, sy);
+    painter.translate(-selection.topLeft());
+    m_canvas->renderAnnotations(&painter);
+    painter.end();
+    return base;
 }
 
 void CaptureOverlayWidget::refreshCanvasForSelection(bool clearAnnotations)
@@ -1057,6 +1080,7 @@ void CaptureOverlayWidget::refreshCanvasForSelection(bool clearAnnotations)
     }
 
     m_canvas->setGeometry(rect());
+    m_canvas->setAnnotationBounds(currentSelectionRect());
     m_canvas->setViewScale(1.0);
     m_canvas->setBackgroundImage(snapshot.toImage());
     syncCanvasToolSettings();

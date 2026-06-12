@@ -49,6 +49,10 @@ public:
      */
     void cancelRequest();
 
+    // 校验 API 地址：https 恒允许；http 仅允许环回地址（localhost/127.0.0.1/::1），
+    // 防止 Bearer 密钥经明文 http 上网。
+    static bool isAllowedApiUrl(const QString &url);
+
 signals:
     // 请求成功，返回响应内容
     void requestSuccess(const QString &response);

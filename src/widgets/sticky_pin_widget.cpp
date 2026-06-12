@@ -417,6 +417,7 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     m_canvas = new StickyCanvasWidget(this);
     m_canvas->setBackgroundImage(m_image);
     m_canvas->setViewScale(m_zoomFactor);
+    m_canvas->setAnnotationBounds(QRect(QPoint(0, 0), m_imageDisplaySize));
     m_canvas->setContentOpacity(m_contentOpacity);
     m_canvas->setPenColor(m_currentPenColor);
     m_canvas->setPenSize(m_currentPenSize);
@@ -460,13 +461,17 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     if (m_aiViewModel) {
         connect(m_aiViewModel, &AIViewModel::signalRequestComplete,
                 this, &StickyPinWidget::applyAiImage);
+        // 仅响应本窗口发起的请求失败，避免多窗口共享同一 ViewModel 时全体弹窗
         connect(m_aiViewModel, &AIViewModel::signalRequestFailed, this,
-                [this](const QString &errorMsg) {
+                [this](const QString &imageUrl, const QString &errorMsg) {
+            if (imageUrl != m_imageUrl) {
+                return;
+            }
             this->setAiLoading(false);
             QMessageBox::warning(this, tr("AI 编辑失败"), errorMsg);
         });
-        connect(m_aiViewModel, &AIViewModel::isLoadingChanged,
-                this, &StickyPinWidget::setAiLoading);
+        // 加载态由本窗口在 openAiEditor() 中本地驱动，不再随全局 isLoadingChanged
+        // 转圈（否则任一窗口处理时所有窗口都会显示遮罩）。
     }
     if (m_visionViewModel) {
         m_visionResultWidget = new VisionResultWidget(m_visionViewModel, this);
@@ -765,7 +770,7 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     raise();
     activateWindow();
     applyNativePosition(m_physicalRect);
-    setAiLoading(m_aiViewModel && m_aiViewModel->isLoading());
+    setAiLoading(false);
 }
 
 StickyPinWidget::~StickyPinWidget()
@@ -1016,6 +1021,15 @@ void StickyPinWidget::mousePressEvent(QMouseEvent *event)
 void StickyPinWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event
+        && (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
+        && (!m_inlineTextPanel || !m_inlineTextPanel->isVisible())
+        && m_canvas
+        && m_canvas->deleteSelectedShape()) {
+        event->accept();
+        return;
+    }
+
+    if (event
         && event->matches(QKeySequence::Undo)
         && (!m_inlineTextPanel || !m_inlineTextPanel->isVisible())
         && m_canvas
@@ -1196,6 +1210,9 @@ void StickyPinWidget::openAiEditor()
         return;
     }
 
+    // 先置加载态，再发起请求；若 sendPrompt 同步失败，会通过（已按 URL 过滤的）
+    // signalRequestFailed 回调把加载态清除，顺序安全。
+    setAiLoading(true);
     m_aiViewModel->sendPrompt(trimmed, m_imageUrl);
 }
 
@@ -1443,6 +1460,7 @@ void StickyPinWidget::updateLayoutAndSize()
 
     if (m_canvas) {
         m_canvas->setGeometry(contentRect());
+        m_canvas->setAnnotationBounds(QRect(QPoint(0, 0), contentRect().size()));
     }
 
     if (m_toolOptions) {
@@ -1605,5 +1623,3 @@ int StickyPinWidget::toolbarWidth() const
 {
     return 32 * 16 + 52 + 2 * 16 + 12;
 }
-
-

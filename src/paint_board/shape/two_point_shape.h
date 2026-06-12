@@ -18,6 +18,8 @@ public:
     // 实现 Shape 的纯虚函数
     void setEndPoint(const QPoint& point) override;
     QPoint endPoint() const;
+    QRect boundingRect() const override;
+    void translate(const QPoint& offset) override;
 
 protected:
     QPoint m_startPoint;

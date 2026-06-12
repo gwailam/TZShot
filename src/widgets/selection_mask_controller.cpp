@@ -302,26 +302,28 @@ SelectionMaskController::DragMode SelectionMaskController::hitTest(const QPoint 
     const int x = pos.x();
     const int y = pos.y();
 
+    // 先判定四个角，再判定四条边。边判定使用"一坐标接近 + 另一坐标在区间内"，
+    // 若排在角之前会遮蔽右上/右下/左下角，导致这些角无法对角缩放。
     if (nearValue(x, left, m_hitMargin) && nearValue(y, top, m_hitMargin)) {
         return DragMode::ResizeTopLeft;
-    }
-    if (nearValue(y, top, m_hitMargin) && x >= left && x <= right) {
-        return DragMode::ResizeTop;
     }
     if (nearValue(x, right, m_hitMargin) && nearValue(y, top, m_hitMargin)) {
         return DragMode::ResizeTopRight;
     }
-    if (nearValue(x, right, m_hitMargin) && y >= top && y <= bottom) {
-        return DragMode::ResizeRight;
-    }
     if (nearValue(x, right, m_hitMargin) && nearValue(y, bottom, m_hitMargin)) {
         return DragMode::ResizeBottomRight;
     }
-    if (nearValue(y, bottom, m_hitMargin) && x >= left && x <= right) {
-        return DragMode::ResizeBottom;
-    }
     if (nearValue(x, left, m_hitMargin) && nearValue(y, bottom, m_hitMargin)) {
         return DragMode::ResizeBottomLeft;
+    }
+    if (nearValue(y, top, m_hitMargin) && x >= left && x <= right) {
+        return DragMode::ResizeTop;
+    }
+    if (nearValue(x, right, m_hitMargin) && y >= top && y <= bottom) {
+        return DragMode::ResizeRight;
+    }
+    if (nearValue(y, bottom, m_hitMargin) && x >= left && x <= right) {
+        return DragMode::ResizeBottom;
     }
     if (nearValue(x, left, m_hitMargin) && y >= top && y <= bottom) {
         return DragMode::ResizeLeft;

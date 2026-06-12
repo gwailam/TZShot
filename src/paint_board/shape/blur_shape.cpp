@@ -39,6 +39,52 @@ void BlurShape::draw(QPainter *painter)
     painter->restore();
 }
 
+QRect BlurShape::boundingRect() const
+{
+    QRect bounds;
+    bool hasBounds = false;
+    for (const QPoint &point : m_points) {
+        const QRect pointRect(point.x() - m_brushRadius,
+                              point.y() - m_brushRadius,
+                              m_brushRadius * 2,
+                              m_brushRadius * 2);
+        bounds = hasBounds ? bounds.united(pointRect) : pointRect;
+        hasBounds = true;
+    }
+    for (const BlurPatch &patch : m_patches) {
+        bounds = hasBounds ? bounds.united(patch.rect) : patch.rect;
+        hasBounds = true;
+    }
+    return bounds;
+}
+
+bool BlurShape::contains(const QPoint &point, int tolerance) const
+{
+    const int hitRadius = m_brushRadius + qMax(2, tolerance);
+    for (const QPoint &pathPoint : m_points) {
+        const QPoint delta = point - pathPoint;
+        if (delta.x() * delta.x() + delta.y() * delta.y() <= hitRadius * hitRadius) {
+            return true;
+        }
+    }
+    return boundingRect().adjusted(-tolerance, -tolerance, tolerance, tolerance).contains(point);
+}
+
+void BlurShape::translate(const QPoint &offset)
+{
+    if (offset.isNull()) {
+        return;
+    }
+
+    for (QPoint &point : m_points) {
+        point += offset;
+    }
+    for (BlurPatch &patch : m_patches) {
+        patch.center += offset;
+        patch.rect.translate(offset);
+    }
+}
+
 void BlurShape::setCanvasSnapshot(const QImage &snapshot)
 {
     if (snapshot.isNull()) {

@@ -1,5 +1,6 @@
 #include "instance_activation.h"
 
+#include <QDebug>
 #include <QLocalServer>
 #include <QLocalSocket>
 
@@ -34,10 +35,12 @@ bool InstanceActivation::initialize()
     // Become the primary instance.
     QLocalServer::removeServer(m_serverName);
     m_server = new QLocalServer(this);
+    // 仅允许当前用户连接，避免其他用户进程抢占服务名或注入激活请求。
+    m_server->setSocketOptions(QLocalServer::UserAccessOption);
     connect(m_server, &QLocalServer::newConnection,
             this, &InstanceActivation::onNewConnection);
     if (!m_server->listen(m_serverName)) {
-        return true;
+        qWarning() << "[InstanceActivation] listen 失败:" << m_server->errorString();
     }
     return true;
 }

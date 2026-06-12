@@ -46,6 +46,11 @@ bool SeedreamAiCall::sendRequest(const QString &prompt, const QJsonObject &param
         return false;
     }
 
+    if (!isAllowedApiUrl(m_apiUrl)) {
+        setError(AIErrorType::ParamError, tr("API 地址必须使用 HTTPS"));
+        return false;
+    }
+
     cancelRequest();
 
     QNetworkRequest request = buildRequest();
@@ -168,6 +173,6 @@ QString SeedreamAiCall::parseResponse(const QByteArray &responseData)
     if (url.isEmpty())
         throw std::runtime_error(tr("响应中 url 字段为空").toStdString());
 
-    qDebug() << "[SeedreamAiCall] 生成图片 URL：" << url;
+    qDebug() << "[SeedreamAiCall] 已解析生成图片地址";
     return url;
 }

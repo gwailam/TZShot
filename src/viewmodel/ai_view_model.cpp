@@ -72,7 +72,7 @@ void AIViewModel::rebuildAiCall()
         const QString msg = prefix + errorMsg;
         qWarning() << "[AIViewModel]" << msg;
         setLoading(false);
-        emit signalRequestFailed(msg);
+        emit signalRequestFailed(m_pendingImageUrl, msg);
     });
 }
 
@@ -107,8 +107,9 @@ void AIViewModel::sendPrompt(const QString &prompt, const QString &imageUrl)
         qWarning() << "[AIViewModel] 已有请求进行中，忽略本次调用";
         return;
     }
+    m_pendingImageUrl = imageUrl;
     if (prompt.trimmed().isEmpty()) {
-        emit signalRequestFailed(tr("提示词不能为空"));
+        emit signalRequestFailed(imageUrl, tr("提示词不能为空"));
         return;
     }
 
@@ -147,10 +148,20 @@ void AIViewModel::sendPrompt(const QString &prompt, const QString &imageUrl)
 
     connect(m_aiCall, &AICallBase::requestSuccess, this,
             [this, originalUrl](const QString &aiImageUrl) {
-        qDebug() << "[AIViewModel] AI 返回图片 URL：" << aiImageUrl;
+        qDebug() << "[AIViewModel] AI 已返回生成图片";
+
+        // 仅允许 http/https，阻断 file:// 等本地文件读取 / SSRF 探测
+        const QUrl downloadUrl(aiImageUrl);
+        if (!downloadUrl.isValid()
+            || (downloadUrl.scheme() != QLatin1String("http")
+                && downloadUrl.scheme() != QLatin1String("https"))) {
+            setLoading(false);
+            emit signalRequestFailed(originalUrl, tr("AI 返回的图片地址不安全"));
+            return;
+        }
 
         auto *dlManager = new QNetworkAccessManager(this);
-        QNetworkReply *reply = dlManager->get(QNetworkRequest(QUrl(aiImageUrl)));
+        QNetworkReply *reply = dlManager->get(QNetworkRequest(downloadUrl));
 
         connect(reply, &QNetworkReply::finished, this,
                 [this, reply, dlManager, originalUrl]() {
@@ -162,7 +173,7 @@ void AIViewModel::sendPrompt(const QString &prompt, const QString &imageUrl)
                 const QString msg = tr("下载生成图片失败：")
                                     + reply->errorString();
                 qWarning() << "[AIViewModel]" << msg;
-                emit signalRequestFailed(msg);
+                emit signalRequestFailed(originalUrl, msg);
                 return;
             }
 
@@ -170,7 +181,7 @@ void AIViewModel::sendPrompt(const QString &prompt, const QString &imageUrl)
             if (!newImage.load(reply, nullptr)) {
                 const QString msg = tr("生成图片解码失败");
                 qWarning() << "[AIViewModel]" << msg;
-                emit signalRequestFailed(msg);
+                emit signalRequestFailed(originalUrl, msg);
                 return;
             }
 
@@ -180,7 +191,7 @@ void AIViewModel::sendPrompt(const QString &prompt, const QString &imageUrl)
             }
 
             const QString newStickyUrl = m_store.storeImage(newImage);
-            qDebug() << "[AIViewModel] 新贴图 URL：" << newStickyUrl;
+            qDebug() << "[AIViewModel] 新贴图已生成";
             // 同时发出原图 URL，让各贴图窗口判断是否是自己触发的请求
             emit signalRequestComplete(originalUrl, newStickyUrl);
         });
@@ -191,6 +202,6 @@ void AIViewModel::sendPrompt(const QString &prompt, const QString &imageUrl)
         setLoading(false);
         disconnect(m_aiCall, &AICallBase::requestSuccess, this, nullptr);
         emit signalRequestFailed(
-            tr("请求发起失败：") + m_aiCall->lastErrorString());
+            imageUrl, tr("请求发起失败：") + m_aiCall->lastErrorString());
     }
 }
