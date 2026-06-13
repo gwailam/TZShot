@@ -48,6 +48,9 @@ public:
                            bool withBackground);
     void undo();
     bool deleteSelectedShape();
+    bool hasSelectedShape() const { return m_selectedShapeIndex >= 0 && m_selectedShapeIndex < m_shapes.size(); }
+    // 若当前有选中的形状则取消选中并重绘，返回是否发生了取消。
+    bool clearSelection();
     void reset();
 
 signals:

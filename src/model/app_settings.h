@@ -23,6 +23,12 @@ public:
     QString savePath() const;
     void    setSavePath(const QString &path);
 
+    // 贴图：关闭含未保存标注的贴图前是否弹出确认（默认开启）。
+    // 设计为静态：贴图窗口（StickyPinWidget）无法方便地获取 AppSettings 实例，
+    // 故以静态方法直接读写 QSettings，集中维护键名与默认值，避免散落的字符串常量。
+    static bool confirmCloseStickyWithAnnotations();
+    static void setConfirmCloseStickyWithAnnotations(bool enabled);
+
 private:
     QString m_language      = "zh_CN";
     QString m_savePath;

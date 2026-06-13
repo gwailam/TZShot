@@ -3,6 +3,7 @@
 #include "language_manager.h"
 #include "viewmodel/storage_view_model.h"
 #include "shortcut_key/globalshortcut.h"
+#include "model/app_settings.h"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -368,6 +369,23 @@ QWidget *SettingsDialog::buildGeneralPage()
             }
         });
         grid->addWidget(browse, 0, 2);
+        outer->addWidget(card);
+    }
+
+    outer->addSpacing(8);
+    outer->addWidget(createSectionTitle(tr("贴图设置")));
+    {
+        auto *card = createCard();
+        auto *grid = new QGridLayout(card);
+        grid->setContentsMargins(16, 16, 16, 16);
+        grid->setHorizontalSpacing(12);
+        addRowLabel(grid, 0, tr("关闭确认"), card);
+        auto *confirmCheck = new QCheckBox(tr("贴图含未保存标注时，关闭前弹出确认"), card);
+        confirmCheck->setChecked(AppSettings::confirmCloseStickyWithAnnotations());
+        connect(confirmCheck, &QCheckBox::toggled, this, [](bool checked) {
+            AppSettings::setConfirmCloseStickyWithAnnotations(checked);
+        });
+        grid->addWidget(confirmCheck, 0, 1);
         outer->addWidget(card);
     }
 

@@ -73,3 +73,15 @@ void AppSettings::setSavePath(const QString &path)
 
     QSettings().setValue("ImageSaver/savePath", m_savePath);
 }
+
+// ── 贴图关闭确认 ──────────────────────────────────────────────
+
+bool AppSettings::confirmCloseStickyWithAnnotations()
+{
+    return QSettings().value("Sticky/confirmCloseWithAnnotations", true).toBool();
+}
+
+void AppSettings::setConfirmCloseStickyWithAnnotations(bool enabled)
+{
+    QSettings().setValue("Sticky/confirmCloseWithAnnotations", enabled);
+}

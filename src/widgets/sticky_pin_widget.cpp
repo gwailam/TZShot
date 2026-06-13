@@ -2,8 +2,10 @@
 
 #include "widgets/sticky_canvas_widget.h"
 #include "sticky_image_store.h"
+#include "model/app_settings.h"
 
 #include <QCheckBox>
+#include <QClipboard>
 #include <QCloseEvent>
 #include <QFile>
 #include <QContextMenuEvent>
@@ -690,6 +692,22 @@ void StickyPinWidget::updateToolOptionsPanel()
 
 void StickyPinWidget::closeEvent(QCloseEvent *event)
 {
+    // 含未保存标注时按设置弹出确认，覆盖 ESC / 关闭按钮 / 右键菜单等所有关闭路径。
+    if (event
+        && AppSettings::confirmCloseStickyWithAnnotations()
+        && m_canvas
+        && m_canvas->hasAnnotations()) {
+        const auto reply = QMessageBox::question(
+            this,
+            tr("关闭贴图"),
+            tr("当前贴图含有未保存的标注，关闭后将丢失。确定要关闭吗？"),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No);
+        if (reply != QMessageBox::Yes) {
+            event->ignore();
+            return;
+        }
+    }
     releaseStoredImage();
     QWidget::closeEvent(event);
 }
@@ -747,6 +765,24 @@ void StickyPinWidget::mousePressEvent(QMouseEvent *event)
 
 void StickyPinWidget::keyPressEvent(QKeyEvent *event)
 {
+    if (event && event->key() == Qt::Key_Escape) {
+        // 分级处理：文字编辑中 → 取消编辑；有选中形状 → 取消选中；否则 → 关闭。
+        // （文字编辑时焦点在内联编辑器上，其 eventFilter 已先行消费 ESC，
+        //  这里仅作防御性兜底，确保任何情况下编辑态优先于关闭。）
+        if (m_inlineTextPanel && m_inlineTextPanel->isVisible()) {
+            cancelInlineText();
+            event->accept();
+            return;
+        }
+        if (m_canvas && m_canvas->clearSelection()) {
+            event->accept();
+            return;
+        }
+        close();
+        event->accept();
+        return;
+    }
+
     if (event
         && (event->key() == Qt::Key_Delete || event->key() == Qt::Key_Backspace)
         && (!m_inlineTextPanel || !m_inlineTextPanel->isVisible())

@@ -578,6 +578,16 @@ void StickyCanvasWidget::clearShapes()
     clearSelectedShape();
 }
 
+bool StickyCanvasWidget::clearSelection()
+{
+    if (!hasSelectedShape()) {
+        return false;
+    }
+    clearSelectedShape();
+    update();
+    return true;
+}
+
 void StickyCanvasWidget::clearSelectedShape()
 {
     m_selectedShapeIndex = -1;
