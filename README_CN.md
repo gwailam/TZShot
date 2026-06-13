@@ -4,17 +4,9 @@
 
 ## 功能截图
 
-| 标注贴图 | AI 图像编辑 |
+| 标注贴图 | 长截图 |
 | --- | --- |
-| ![标注贴图](docs/images/sticky-annotate.png) | ![AI 图像编辑](docs/images/ai-edit.png) |
-
-| AI 视觉理解 | 长截图 |
-| --- | --- |
-| ![AI 视觉理解](docs/images/ai-vision.png) | ![长截图](docs/images/long-capture.png) |
-
-| OCR 结果 |
-| --- |
-| ![OCR 结果](docs/images/ocr-result.png) |
+| ![标注贴图](docs/images/sticky-annotate.png) | ![长截图](docs/images/long-capture.png) |
 
 ## 开源许可
 
@@ -23,7 +15,7 @@
 
 ## 项目简介
 
-`TZshot` 是一个基于 **Qt 6 Widgets + C++** 的截图与贴图工具，支持多屏截图、框选标注、贴图编辑、长截图、OCR、全局快捷键、系统托盘、AI 图像编辑和 AI 图像理解。
+`TZshot` 是一个基于 **Qt 6 Widgets + C++** 的截图与贴图工具，支持多屏截图、框选标注、贴图编辑、长截图、全局快捷键与系统托盘。
 
 ## 主要功能
 
@@ -42,15 +34,12 @@
   - 复制到剪贴板
   - 保存到文件
   - 贴图到桌面
-  - OCR 识别
   - 长截图
 - 贴图窗口
   - 拖拽、透明度调整
   - 缩放、旋转、镜像、1:1 恢复
-  - 标注、OCR、右键菜单
-  - AI 图像编辑与 AI 图像理解
+  - 标注、右键菜单
 - 长截图控制条与预览浮窗
-- OCR 结果浮窗
 - 全局快捷键
 - 系统托盘菜单
 - 中英文切换
@@ -59,7 +48,7 @@
 
 - C++17
 - Qt 6
-  - Core / Gui / Widgets / Network / Concurrent / LinguistTools
+  - Core / Gui / Widgets / Network / LinguistTools
 - CMake
 - 全局快捷键
   - Windows: `RegisterHotKey`
@@ -70,9 +59,9 @@
 - `src/app/`
   - 应用启动、服务组装、Widget 运行时管理
 - `src/widgets/`
-  - 截图浮层、贴图窗口、设置窗口、OCR 结果窗、关于窗口等界面层
+  - 截图浮层、贴图窗口、设置窗口、关于窗口等界面层
 - `src/viewmodel/`
-  - 截图、贴图、长截图、OCR、存储、AI 等业务逻辑
+  - 截图、贴图、长截图、存储等业务逻辑
 - `src/model/`
   - 桌面快照、应用设置
 - `src/paint_board/shape/`
@@ -92,12 +81,9 @@ TZshot/
 │  ├─ model/
 │  ├─ viewmodel/
 │  ├─ paint_board/
-│  ├─ shortcut_key/
-│  ├─ ocr/
-│  └─ ai_call/
+│  └─ shortcut_key/
 ├─ i18n/
 ├─ resource/
-├─ thirdpart/
 └─ CMakeLists.txt
 ```
 
@@ -146,17 +132,6 @@ Linux 运行：
 ./build/TZshot
 ```
 
-## OCR 依赖说明（Windows）
-
-- 首次配置或构建时，CMake 会自动拉取并构建 `Leptonica`、`Tesseract`
-- 输出目录位于 `thirdpart/ocr-install`
-- 项目默认不自动下载 `tessdata`
-- 请手动准备并放置
-  - `thirdpart/ocr-install/share/tessdata/chi_sim.traineddata`
-  - `thirdpart/ocr-install/share/tessdata/eng.traineddata`
-
-若缺少上述文件，运行时会出现 `Tesseract Init 失败：未找到可用 tessdata`。
-
 ## 默认快捷键
 
 - `Alt + A`: 截图
@@ -166,17 +141,6 @@ Linux 运行：
 
 ## 配置项（QSettings）
 
-- AI
-  - `AI/apiKey`
-  - `AI/selectedModel`
-- Vision
-  - `Vision/apiKey`
-  - `Vision/provider`
-  - `Vision/model`
-  - `Vision/proxyEnabled`
-  - `Vision/proxyType`
-  - `Vision/proxyHost`
-  - `Vision/proxyPort`
 - 快捷键
   - `Shortcuts/screenshot`
   - `Shortcuts/screenshotSave`
@@ -186,17 +150,13 @@ Linux 运行：
   - `App/language`
   - `ImageSaver/savePath`
 
-> **安全说明：** `AI/apiKey` 与 `Vision/apiKey` 通过 `QSettings` 以**明文**存储（Windows 下位于注册表 `HKCU\Software\...`），未做加密。在共享或不受信任的机器上请注意泄露风险；如需更强保护，可接入操作系统凭据库（如 Windows DPAPI / Qt Keychain）。
-
 ## 已知说明
 
 - Linux 全局快捷键目前基于 X11，暂不覆盖 Wayland 原生实现
 - 置顶浮层与贴图窗口体验目前以 Windows 最完整
-- OCR 与长截图仍可继续做跨平台增强
 
 ## 贡献与安全提示
 
-- 请勿提交真实的 `API Key`、令牌或个人隐私数据
+- 请勿提交令牌或个人隐私数据
 - 建议统一使用 `UTF-8（无 BOM）` 与 `LF`
 - 修改第三方依赖时，请同步补充许可证说明
-

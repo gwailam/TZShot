@@ -21,7 +21,6 @@ class QPlainTextEdit;
 class ScreenshotViewModel;
 class StickyViewModel;
 class StorageViewModel;
-class OcrViewModel;
 class MagnifierWidget;
 class WidgetWindowBridge;
 class StickyCanvasWidget;
@@ -34,7 +33,6 @@ public:
     explicit CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
                                   StickyViewModel *stickyViewModel,
                                   StorageViewModel *storageViewModel,
-                                  OcrViewModel *ocrViewModel,
                                   WidgetWindowBridge *widgetWindowBridge = nullptr,
                                   QWidget *parent = nullptr);
 
@@ -58,7 +56,6 @@ private:
         Copy,
         Save,
         Sticky,
-        Ocr,
         LongCapture
     };
 
@@ -94,7 +91,6 @@ private:
     QPointer<ScreenshotViewModel> m_screenCapture;
     QPointer<StickyViewModel> m_stickyViewModel;
     QPointer<StorageViewModel> m_storageViewModel;
-    QPointer<OcrViewModel> m_ocrViewModel;
     QPointer<WidgetWindowBridge> m_widgetWindowBridge;
 
     QRect m_virtualGeometry;
@@ -113,7 +109,6 @@ private:
     QToolButton *m_copyButton = nullptr;
     QToolButton *m_saveButton = nullptr;
     QToolButton *m_stickyButton = nullptr;
-    QToolButton *m_ocrButton = nullptr;
     QToolButton *m_longCaptureButton = nullptr;
     QToolButton *m_cancelButton = nullptr;
     QToolButton *m_pencilButton = nullptr;

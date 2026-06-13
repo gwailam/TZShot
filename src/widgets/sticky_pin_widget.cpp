@@ -1,9 +1,6 @@
 #include "widgets/sticky_pin_widget.h"
 
-#include "viewmodel/ai_view_model.h"
-#include "viewmodel/vision_view_model.h"
 #include "widgets/sticky_canvas_widget.h"
-#include "widgets/vision_result_widget.h"
 #include "sticky_image_store.h"
 
 #include <QCheckBox>
@@ -146,35 +143,6 @@ QPoint physicalOffsetForLogicalPoint(const QPoint &logicalPoint, const QPoint &r
 #endif
 }
 
-QIcon makeAiLoadingIcon(int frame, const QSize &size)
-{
-    QPixmap pixmap(size);
-    pixmap.fill(Qt::transparent);
-
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-
-    const QPointF center(pixmap.width() / 2.0, pixmap.height() / 2.0);
-    const qreal radius = qMin(pixmap.width(), pixmap.height()) / 2.0 - 2.0;
-    const int spokeCount = 12;
-
-    for (int i = 0; i < spokeCount; ++i) {
-        const int index = (i + frame) % spokeCount;
-        QColor color(QStringLiteral("#2563EB"));
-        color.setAlphaF((index + 1.0) / spokeCount);
-
-        painter.save();
-        painter.translate(center);
-        painter.rotate((360.0 / spokeCount) * i);
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(color);
-        painter.drawRoundedRect(QRectF(-1.5, -radius, 3.0, qMax<qreal>(4.0, radius * 0.45)), 1.5, 1.5);
-        painter.restore();
-    }
-
-    return QIcon(pixmap);
-}
-
 QString normalizeAnnotationDraft(QString text)
 {
     text.replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
@@ -251,151 +219,18 @@ void syncOptionButtonState(const QVector<QToolButton *> &buttons,
     }
 }
 
-class StickyAiDialog : public QDialog
-{
-public:
-    explicit StickyAiDialog(const QImage &previewImage, QWidget *parent = nullptr)
-        : QDialog(parent)
-    {
-        setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
-        setAttribute(Qt::WA_DeleteOnClose, false);
-        setModal(true);
-        setFixedSize(420, 380);
-        setObjectName(QStringLiteral("stickyAiDialog"));
-        setStyleSheet(QStringLiteral(
-            "#stickyAiDialog { background:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }"
-            "#stickyAiTitle { color:#1E293B; font-size:14px; font-weight:600; }"
-            "#stickyAiSubtle { color:#94A3B8; font-size:10px; }"
-            "#stickyAiPreview { background:#F1F5F9; border:1px solid #E2E8F0; border-radius:6px; }"
-            "#stickyAiInput { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:8px; color:#1E293B; }"
-            "#stickyAiCancel { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; color:#64748B; padding:6px 14px; }"
-            "#stickyAiCancel:hover { background:#F1F5F9; }"
-            "#stickyAiSend { background:#0088FF; border:none; border-radius:6px; color:white; padding:6px 14px; }"
-            "#stickyAiSend:hover { background:#3399FF; }"
-            "#stickyAiClose { background:transparent; border:none; color:#64748B; font-size:14px; }"
-            "#stickyAiClose:hover { background:#FEE2E2; border-radius:6px; color:#B91C1C; }"));
-
-        auto *root = new QVBoxLayout(this);
-        root->setContentsMargins(12, 12, 12, 12);
-        root->setSpacing(8);
-
-        auto *titleBar = new QHBoxLayout;
-        titleBar->setContentsMargins(0, 0, 0, 0);
-        titleBar->setSpacing(8);
-
-        auto *icon = new QLabel(this);
-        icon->setPixmap(QIcon(QStringLiteral(":/resource/img/lc_chat.svg")).pixmap(20, 20));
-        icon->setFixedSize(20, 20);
-        titleBar->addWidget(icon);
-
-        auto *title = new QLabel(tr("AI 图像编辑"), this);
-        title->setObjectName(QStringLiteral("stickyAiTitle"));
-        titleBar->addWidget(title);
-        titleBar->addStretch();
-
-        auto *closeButton = new QPushButton(QStringLiteral("×"), this);
-        closeButton->setObjectName(QStringLiteral("stickyAiClose"));
-        closeButton->setFixedSize(28, 28);
-        connect(closeButton, &QPushButton::clicked, this, &QDialog::reject);
-        titleBar->addWidget(closeButton);
-        root->addLayout(titleBar);
-
-        auto *previewBox = new QFrame(this);
-        previewBox->setObjectName(QStringLiteral("stickyAiPreview"));
-        previewBox->setFixedHeight(64);
-        auto *previewLayout = new QHBoxLayout(previewBox);
-        previewLayout->setContentsMargins(8, 8, 8, 8);
-        previewLayout->setSpacing(10);
-
-        auto *thumb = new QLabel(previewBox);
-        thumb->setFixedSize(48, 48);
-        thumb->setStyleSheet(QStringLiteral("background:#E2E8F0; border-radius:4px;"));
-        if (!previewImage.isNull()) {
-            thumb->setPixmap(QPixmap::fromImage(previewImage).scaled(48, 48, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
-        }
-        previewLayout->addWidget(thumb);
-
-        auto *metaCol = new QVBoxLayout;
-        metaCol->setContentsMargins(0, 0, 0, 0);
-        metaCol->setSpacing(3);
-        auto *label1 = new QLabel(tr("当前贴图"), previewBox);
-        label1->setStyleSheet(QStringLiteral("color:#94A3B8; font-size:11px;"));
-        metaCol->addWidget(label1);
-        auto *label2 = new QLabel(tr("发送后将对此图执行 AI 编辑"), previewBox);
-        label2->setObjectName(QStringLiteral("stickyAiSubtle"));
-        metaCol->addWidget(label2);
-        metaCol->addStretch();
-        previewLayout->addLayout(metaCol, 1);
-        root->addWidget(previewBox);
-
-        m_input = new QPlainTextEdit(this);
-        m_input->setObjectName(QStringLiteral("stickyAiInput"));
-        m_input->setPlaceholderText(tr("描述您想要的修改..."));
-        root->addWidget(m_input, 1);
-
-        auto *bottom = new QHBoxLayout;
-        bottom->setContentsMargins(0, 0, 0, 0);
-        bottom->addStretch();
-
-        auto *cancelButton = new QPushButton(tr("取消"), this);
-        cancelButton->setObjectName(QStringLiteral("stickyAiCancel"));
-        connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-        bottom->addWidget(cancelButton);
-
-        auto *sendButton = new QPushButton(tr("发送"), this);
-        sendButton->setObjectName(QStringLiteral("stickyAiSend"));
-        connect(sendButton, &QPushButton::clicked, this, [this]() {
-            if (!m_input->toPlainText().trimmed().isEmpty()) {
-                accept();
-            }
-        });
-        bottom->addWidget(sendButton);
-        root->addLayout(bottom);
-    }
-
-    QString prompt() const
-    {
-        return m_input ? m_input->toPlainText().trimmed() : QString();
-    }
-
-protected:
-    void mousePressEvent(QMouseEvent *event) override
-    {
-        if (event->button() == Qt::LeftButton) {
-            m_dragOffset = event->globalPosition().toPoint() - frameGeometry().topLeft();
-        }
-        QDialog::mousePressEvent(event);
-    }
-
-    void mouseMoveEvent(QMouseEvent *event) override
-    {
-        if (event->buttons() & Qt::LeftButton) {
-            move(event->globalPosition().toPoint() - m_dragOffset);
-        }
-        QDialog::mouseMoveEvent(event);
-    }
-
-private:
-    QPlainTextEdit *m_input = nullptr;
-    QPoint m_dragOffset;
-};
-
 }
 
 StickyPinWidget::StickyPinWidget(const QString &imageUrl,
                                  const QRect &physicalRect,
                                  const QImage &image,
                                  StickyImageStore *store,
-                                 AIViewModel *aiViewModel,
-                                 VisionViewModel *visionViewModel,
                                  QWidget *parent)
     : QWidget(parent)
     , m_imageUrl(imageUrl)
     , m_physicalRect(physicalRect.normalized())
     , m_image(image)
     , m_store(store)
-    , m_aiViewModel(aiViewModel)
-    , m_visionViewModel(visionViewModel)
 {
     m_annotationText.clear();
 
@@ -458,25 +293,6 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
         updateLayoutAndSize();
         showInlineTextEditor(point, text);
     });
-    if (m_aiViewModel) {
-        connect(m_aiViewModel, &AIViewModel::signalRequestComplete,
-                this, &StickyPinWidget::applyAiImage);
-        // 仅响应本窗口发起的请求失败，避免多窗口共享同一 ViewModel 时全体弹窗
-        connect(m_aiViewModel, &AIViewModel::signalRequestFailed, this,
-                [this](const QString &imageUrl, const QString &errorMsg) {
-            if (imageUrl != m_imageUrl) {
-                return;
-            }
-            this->setAiLoading(false);
-            QMessageBox::warning(this, tr("AI 编辑失败"), errorMsg);
-        });
-        // 加载态由本窗口在 openAiEditor() 中本地驱动，不再随全局 isLoadingChanged
-        // 转圈（否则任一窗口处理时所有窗口都会显示遮罩）。
-    }
-    if (m_visionViewModel) {
-        m_visionResultWidget = new VisionResultWidget(m_visionViewModel, this);
-    }
-
     m_toolOptions = new QWidget(this);
     m_toolOptions->setObjectName(QStringLiteral("stickyToolOptions"));
 
@@ -616,20 +432,11 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     m_textButton = new QToolButton(m_toolbar);
     m_numberButton = new QToolButton(m_toolbar);
     m_undoButton = new QToolButton(m_toolbar);
-    m_aiButton = new QToolButton(m_toolbar);
-    m_visionButton = new QToolButton(m_toolbar);
     m_copyButton = new QToolButton(m_toolbar);
     m_saveButton = new QToolButton(m_toolbar);
     m_zoomLabel = new QLabel(m_toolbar);
     m_toggleToolbarButton = new QToolButton(m_toolbar);
     m_closeButton = new QToolButton(m_toolbar);
-    m_aiLoadingTimer = new QTimer(this);
-    m_aiLoadingTimer->setInterval(90);
-    connect(m_aiLoadingTimer, &QTimer::timeout, this, [this]() {
-        m_aiLoadingFrame = (m_aiLoadingFrame + 1) % 12;
-        updateAiLoadingIcon();
-        update();
-    });
 
     auto setupButton = [](QToolButton *button, const QString &tooltip) {
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -650,8 +457,6 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     setupButton(m_textButton, tr("文字"));
     setupButton(m_numberButton, tr("序号"));
     setupButton(m_undoButton, tr("撤销"));
-    setupButton(m_aiButton, tr("AI 编辑"));
-    setupButton(m_visionButton, tr("AI 理解"));
     setupButton(m_copyButton, tr("复制"));
     setupButton(m_saveButton, tr("保存"));
     setupButton(m_toggleToolbarButton, tr("隐藏工具栏"));
@@ -687,8 +492,6 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     m_textButton->setIcon(QIcon(QStringLiteral(":/resource/img/lc_text.svg")));
     m_numberButton->setIcon(QIcon(QStringLiteral(":/resource/img/lc_list_ordered.svg")));
     m_undoButton->setIcon(QIcon(QStringLiteral(":/resource/img/lc_undo.svg")));
-    m_aiButton->setIcon(QIcon(QStringLiteral(":/resource/img/lc_chat.svg")));
-    m_visionButton->setIcon(QIcon(QStringLiteral(":/resource/img/lc_ocr.svg")));
     QIcon copyIcon = QIcon::fromTheme(QStringLiteral("edit-copy"));
     if (copyIcon.isNull()) {
         copyIcon = style()->standardIcon(QStyle::SP_FileDialogDetailedView);
@@ -724,8 +527,6 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
             m_canvas->undo();
         }
     });
-    connect(m_aiButton, &QToolButton::clicked, this, &StickyPinWidget::openAiEditor);
-    connect(m_visionButton, &QToolButton::clicked, this, &StickyPinWidget::openVisionWindow);
     connect(m_copyButton, &QToolButton::clicked, this, [this]() {
         if (m_store) {
             m_store->copyImageToClipboard(m_imageUrl);
@@ -746,12 +547,6 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
         if (!child) {
             continue;
         }
-        if (child == m_visionResultWidget) {
-            continue;
-        }
-        if (m_visionResultWidget && m_visionResultWidget->isAncestorOf(child)) {
-            continue;
-        }
         child->installEventFilter(this);
     }
 
@@ -770,7 +565,6 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
     raise();
     activateWindow();
     applyNativePosition(m_physicalRect);
-    setAiLoading(false);
 }
 
 StickyPinWidget::~StickyPinWidget()
@@ -803,63 +597,6 @@ void StickyPinWidget::paintEvent(QPaintEvent *event)
 
     painter.setBrush(Qt::NoBrush);
     painter.drawRoundedRect(imageRect, 4, 4);
-
-    if (m_aiLoading) {
-        painter.save();
-        painter.setRenderHint(QPainter::Antialiasing, true);
-
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(15, 23, 42, 72));
-        painter.drawRoundedRect(imageRect, 4, 4);
-
-        const QSize overlaySize(156, 120);
-        QRect overlayRect(QPoint(0, 0), overlaySize);
-        overlayRect.moveCenter(imageRect.center());
-
-        painter.setBrush(QColor(255, 255, 255, 238));
-        painter.drawRoundedRect(overlayRect, 14, 14);
-
-        painter.translate(overlayRect.center());
-        const int spokeCount = 12;
-        const qreal radius = 22.0;
-        for (int i = 0; i < spokeCount; ++i) {
-            const int index = (i + m_aiLoadingFrame) % spokeCount;
-            QColor color(QStringLiteral("#2563EB"));
-            color.setAlphaF((index + 1.0) / spokeCount);
-
-            painter.save();
-            painter.rotate((360.0 / spokeCount) * i);
-            painter.setBrush(color);
-            painter.drawRoundedRect(QRectF(-2.0, -radius, 4.0, 12.0), 2.0, 2.0);
-            painter.restore();
-        }
-        painter.resetTransform();
-
-        painter.setPen(QColor(QStringLiteral("#0F172A")));
-        QFont labelFont = painter.font();
-        labelFont.setPointSize(11);
-        labelFont.setBold(true);
-        painter.setFont(labelFont);
-        painter.drawText(QRect(overlayRect.left() + 12,
-                               overlayRect.bottom() - 44,
-                               overlayRect.width() - 24,
-                               20),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         tr("AI 正在处理中"));
-
-        painter.setPen(QColor(QStringLiteral("#64748B")));
-        QFont hintFont = painter.font();
-        hintFont.setPointSize(9);
-        hintFont.setBold(false);
-        painter.setFont(hintFont);
-        painter.drawText(QRect(overlayRect.left() + 12,
-                               overlayRect.bottom() - 24,
-                               overlayRect.width() - 24,
-                               16),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         tr("请稍候…"));
-        painter.restore();
-    }
 }
 
 void StickyPinWidget::setActiveTool(Shapeype type, QToolButton *activeButton)
@@ -962,8 +699,6 @@ void StickyPinWidget::contextMenuEvent(QContextMenuEvent *event)
     QMenu menu(this);
     QAction *copyAction = menu.addAction(tr("复制"));
     QAction *saveAction = menu.addAction(tr("保存原图"));
-    QAction *aiAction = menu.addAction(tr("AI 编辑"));
-    QAction *visionAction = menu.addAction(tr("AI 理解"));
     QAction *toggleAction = menu.addAction(m_toolbarVisible ? tr("隐藏工具栏") : tr("显示工具栏"));
     QAction *shadowAction = menu.addAction(m_shadowVisible ? tr("隐藏阴影") : tr("显示阴影"));
     menu.addSeparator();
@@ -977,14 +712,6 @@ void StickyPinWidget::contextMenuEvent(QContextMenuEvent *event)
     }
     if (chosen == saveAction) {
         saveCurrentImage();
-        return;
-    }
-    if (chosen == aiAction) {
-        openAiEditor();
-        return;
-    }
-    if (chosen == visionAction) {
-        openVisionWindow();
         return;
     }
     if (chosen == toggleAction) {
@@ -1173,58 +900,6 @@ void StickyPinWidget::setZoomFactor(qreal value)
     update();
 }
 
-void StickyPinWidget::openAiEditor()
-{
-    if (!m_aiViewModel) {
-        QMessageBox::information(this, tr("AI 编辑"), tr("AI 功能当前不可用。"));
-        return;
-    }
-    if (m_aiViewModel->isLoading()) {
-        QMessageBox::information(this, tr("AI 编辑"), tr("当前有图像编辑任务正在处理中。"));
-        return;
-    }
-
-    StickyAiDialog dialog(m_image, this);
-    QPoint panelPos = frameGeometry().bottomLeft() + QPoint(0, 6);
-    if (QScreen *screen = this->screen()) {
-        const QRect available = screen->availableGeometry();
-        if (panelPos.y() + dialog.height() > available.bottom() + 1) {
-            panelPos.setY(frameGeometry().top() - dialog.height() - 6);
-        }
-        if (panelPos.x() + dialog.width() > available.right() + 1) {
-            panelPos.setX(available.right() - dialog.width() + 1);
-        }
-        panelPos.setX(qMax(available.left(), panelPos.x()));
-        panelPos.setY(qMax(available.top(), panelPos.y()));
-    }
-    dialog.move(panelPos);
-
-    if (dialog.exec() != QDialog::Accepted) {
-        return;
-    }
-
-    const QString prompt = dialog.prompt();
-    const QString trimmed = prompt.trimmed();
-    if (trimmed.isEmpty()) {
-        QMessageBox::information(this, tr("AI 编辑"), tr("提示词不能为空。"));
-        return;
-    }
-
-    // 先置加载态，再发起请求；若 sendPrompt 同步失败，会通过（已按 URL 过滤的）
-    // signalRequestFailed 回调把加载态清除，顺序安全。
-    setAiLoading(true);
-    m_aiViewModel->sendPrompt(trimmed, m_imageUrl);
-}
-
-void StickyPinWidget::openVisionWindow()
-{
-    if (!m_visionViewModel || !m_visionResultWidget) {
-        QMessageBox::information(this, tr("AI 理解"), tr("视觉理解功能当前不可用。"));
-        return;
-    }
-    m_visionResultWidget->showForImage(m_imageUrl, m_image);
-}
-
 void StickyPinWidget::showInlineTextEditor(const QPoint &point, const QString &initialText)
 {
     m_pendingTextPoint = point;
@@ -1306,80 +981,6 @@ void StickyPinWidget::cancelInlineText(bool restoreOriginal)
     m_inlineOriginalColor = QColor("#F43F5E");
     m_inlineOriginalSize = 6;
     m_inlineOriginalTextBackground = false;
-}
-
-void StickyPinWidget::applyAiImage(const QString &oldImageUrl, const QString &newImageUrl)
-{
-    if (oldImageUrl != m_imageUrl || !m_store) {
-        return;
-    }
-
-    const QImage newImage = m_store->getImageByUrl(newImageUrl);
-    if (newImage.isNull()) {
-        return;
-    }
-
-    const QString previousUrl = m_imageUrl;
-    const QSize oldBaseDisplaySize = m_baseImageDisplaySize;
-    const QSize oldDisplaySize = m_imageDisplaySize;
-    m_imageUrl = newImageUrl;
-    m_image = newImage;
-    const qreal dpr = screenScaleForRect(m_physicalRect);
-    if (!m_image.isNull() && dpr > 0.0) {
-        m_image.setDevicePixelRatio(dpr);
-        m_store->replaceImage(m_imageUrl, m_image);
-    }
-    m_baseImageDisplaySize = oldBaseDisplaySize;
-    m_imageDisplaySize = oldDisplaySize;
-    if (m_canvas) {
-        m_canvas->setViewScale(m_zoomFactor);
-        m_canvas->reset();
-        m_canvas->setBackgroundImage(m_image);
-        syncCanvasToolSettings();
-    }
-    updateLayoutAndSize();
-    update();
-    m_store->releaseImage(previousUrl);
-    setAiLoading(false);
-}
-
-void StickyPinWidget::setAiLoading(bool loading)
-{
-    if (m_aiLoading == loading) {
-        return;
-    }
-
-    m_aiLoading = loading;
-    if (m_aiButton) {
-        m_aiButton->setEnabled(!loading);
-        m_aiButton->setToolTip(loading ? tr("AI 编辑处理中…") : tr("AI 编辑"));
-    }
-
-    if (loading) {
-        m_aiLoadingFrame = 0;
-        updateAiLoadingIcon();
-        if (m_aiLoadingTimer) {
-            m_aiLoadingTimer->start();
-        }
-        update();
-        return;
-    }
-
-    if (m_aiLoadingTimer) {
-        m_aiLoadingTimer->stop();
-    }
-    if (m_aiButton) {
-        m_aiButton->setIcon(QIcon(QStringLiteral(":/resource/img/lc_chat.svg")));
-    }
-    update();
-}
-
-void StickyPinWidget::updateAiLoadingIcon()
-{
-    if (!m_aiButton || !m_aiLoading) {
-        return;
-    }
-    m_aiButton->setIcon(makeAiLoadingIcon(m_aiLoadingFrame, m_aiButton->iconSize()));
 }
 
 void StickyPinWidget::releaseStoredImage()
@@ -1471,7 +1072,7 @@ void StickyPinWidget::updateLayoutAndSize()
     if (m_pencilButton && m_rectButton && m_circleButton && m_arrowButton
         && m_highlightButton && m_mosaicButton && m_blurButton
         && m_textButton && m_numberButton
-        && m_undoButton && m_aiButton && m_visionButton && m_copyButton && m_saveButton && m_zoomLabel
+        && m_undoButton && m_copyButton && m_saveButton && m_zoomLabel
         && m_toggleToolbarButton && m_closeButton) {
         const int buttonH = 32;
         const int buttonW = 32;
@@ -1498,10 +1099,6 @@ void StickyPinWidget::updateLayoutAndSize()
         m_numberButton->setGeometry(x, buttonY, buttonW, buttonH);
         x += buttonW + gap;
         m_undoButton->setGeometry(x, buttonY, buttonW, buttonH);
-        x += buttonW + gap;
-        m_aiButton->setGeometry(x, buttonY, buttonW, buttonH);
-        x += buttonW + gap;
-        m_visionButton->setGeometry(x, buttonY, buttonW, buttonH);
         x += buttonW + gap;
         m_copyButton->setGeometry(x, buttonY, buttonW, buttonH);
         x += buttonW + gap;
@@ -1621,5 +1218,5 @@ int StickyPinWidget::toolbarHeight() const
 
 int StickyPinWidget::toolbarWidth() const
 {
-    return 32 * 16 + 52 + 2 * 16 + 12;
+    return 32 * 14 + 52 + 2 * 14 + 12;
 }

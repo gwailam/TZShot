@@ -11,22 +11,12 @@ AppSettings::AppSettings()
 {
     QSettings s;
 
-    m_apiKey        = s.value("AI/apiKey", "").toString();
-    m_visionApiKey  = s.value("Vision/apiKey", "").toString();
-    m_visionProvider = s.value("Vision/provider", 0).toInt();
-    m_visionModel = s.value("Vision/model", "doubao-vision-pro-32k-2410128").toString();
-    m_visionWebSearchEnabled = s.value("Vision/webSearchEnabled", true).toBool();
-    m_visionProxyEnabled = s.value("Vision/proxyEnabled", false).toBool();
-    m_visionProxyType = s.value("Vision/proxyType", 0).toInt();
-    m_visionProxyHost = s.value("Vision/proxyHost", "127.0.0.1").toString();
-    m_visionProxyPort = s.value("Vision/proxyPort", 7890).toInt();
-    m_selectedModel = s.value("AI/selectedModel", 0).toInt();
     // 语言：若用户从未手动设置过，则根据系统语言选择默认值
     if (s.contains("App/language")) {
         m_language = s.value("App/language").toString();
     } else {
         // QLocale::system().name() 返回形如 "zh_CN"、"en_US" 等
-        QString sysLang = QLocale::system().name();  // e.g. "zh_CN", "en_US"
+        QString sysLang = QLocale::system().name();
         if (sysLang.startsWith("zh")) {
             m_language = "zh_CN";
         } else {
@@ -49,133 +39,6 @@ AppSettings::AppSettings()
         }
     }
     qInfo() << "[AppSettings] 保存路径：" << m_savePath;
-
-}
-
-// ── AI 配置 ───────────────────────────────────────────────
-// 安全说明：API Key（AI/apiKey、Vision/apiKey）以明文持久化到 QSettings
-// （Windows 下为注册表 HKCU\Software\...）。当前未做加密，请在共享/受控
-// 环境中注意泄露风险；如需更强保护可接入 OS 凭据库（Windows DPAPI /
-// Qt Keychain 等）。
-
-QString AppSettings::apiKey() const
-{
-    return m_apiKey;
-}
-
-void AppSettings::setApiKey(const QString &key)
-{
-    if (m_apiKey == key) return;
-    m_apiKey = key;
-    QSettings().setValue("AI/apiKey", m_apiKey);
-}
-
-QString AppSettings::visionApiKey() const
-{
-    return m_visionApiKey;
-}
-
-void AppSettings::setVisionApiKey(const QString &key)
-{
-    if (m_visionApiKey == key) return;
-    m_visionApiKey = key;
-    QSettings().setValue("Vision/apiKey", m_visionApiKey);
-}
-
-int AppSettings::visionProvider() const
-{
-    return m_visionProvider;
-}
-
-void AppSettings::setVisionProvider(int provider)
-{
-    if (m_visionProvider == provider) return;
-    m_visionProvider = provider;
-    QSettings().setValue("Vision/provider", m_visionProvider);
-}
-
-QString AppSettings::visionModel() const
-{
-    return m_visionModel;
-}
-
-void AppSettings::setVisionModel(const QString &model)
-{
-    if (m_visionModel == model) return;
-    m_visionModel = model;
-    QSettings().setValue("Vision/model", m_visionModel);
-}
-
-bool AppSettings::visionWebSearchEnabled() const
-{
-    return m_visionWebSearchEnabled;
-}
-
-void AppSettings::setVisionWebSearchEnabled(bool enabled)
-{
-    if (m_visionWebSearchEnabled == enabled) return;
-    m_visionWebSearchEnabled = enabled;
-    QSettings().setValue("Vision/webSearchEnabled", m_visionWebSearchEnabled);
-}
-
-bool AppSettings::visionProxyEnabled() const
-{
-    return m_visionProxyEnabled;
-}
-
-void AppSettings::setVisionProxyEnabled(bool enabled)
-{
-    if (m_visionProxyEnabled == enabled) return;
-    m_visionProxyEnabled = enabled;
-    QSettings().setValue("Vision/proxyEnabled", m_visionProxyEnabled);
-}
-
-int AppSettings::visionProxyType() const
-{
-    return m_visionProxyType;
-}
-
-void AppSettings::setVisionProxyType(int type)
-{
-    if (m_visionProxyType == type) return;
-    m_visionProxyType = type;
-    QSettings().setValue("Vision/proxyType", m_visionProxyType);
-}
-
-QString AppSettings::visionProxyHost() const
-{
-    return m_visionProxyHost;
-}
-
-void AppSettings::setVisionProxyHost(const QString &host)
-{
-    if (m_visionProxyHost == host) return;
-    m_visionProxyHost = host;
-    QSettings().setValue("Vision/proxyHost", m_visionProxyHost);
-}
-
-int AppSettings::visionProxyPort() const
-{
-    return m_visionProxyPort;
-}
-
-void AppSettings::setVisionProxyPort(int port)
-{
-    if (m_visionProxyPort == port) return;
-    m_visionProxyPort = port;
-    QSettings().setValue("Vision/proxyPort", m_visionProxyPort);
-}
-
-int AppSettings::selectedModel() const
-{
-    return m_selectedModel;
-}
-
-void AppSettings::setSelectedModel(int index)
-{
-    if (m_selectedModel == index) return;
-    m_selectedModel = index;
-    QSettings().setValue("AI/selectedModel", m_selectedModel);
 }
 
 // ── 语言配置 ──────────────────────────────────────────────

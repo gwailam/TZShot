@@ -4,17 +4,9 @@
 
 ## Screenshots
 
-| Sticky Annotate | AI Image Edit |
+| Sticky Annotate | Long Capture |
 | --- | --- |
-| ![Sticky Annotate](docs/images/sticky-annotate.png) | ![AI Image Edit](docs/images/ai-edit.png) |
-
-| AI Vision | Long Capture |
-| --- | --- |
-| ![AI Vision](docs/images/ai-vision.png) | ![Long Capture](docs/images/long-capture.png) |
-
-| OCR Result |
-| --- |
-| ![OCR Result](docs/images/ocr-result.png) |
+| ![Sticky Annotate](docs/images/sticky-annotate.png) | ![Long Capture](docs/images/long-capture.png) |
 
 ## License
 
@@ -23,7 +15,7 @@ See [LICENSE](./LICENSE).
 
 ## Overview
 
-`TZshot` is a screenshot and pin-image utility built with **Qt 6 Widgets + C++**. It supports multi-screen capture, region annotation, sticky image editing, long screenshots, OCR, global shortcuts, tray integration, AI image editing, and AI visual understanding.
+`TZshot` is a screenshot and pin-image utility built with **Qt 6 Widgets + C++**. It supports multi-screen capture, region annotation, sticky image editing, long screenshots, global shortcuts, and tray integration.
 
 ## Features
 
@@ -42,15 +34,12 @@ See [LICENSE](./LICENSE).
   - Copy to clipboard
   - Save to file
   - Pin to desktop
-  - OCR
   - Long screenshot
 - Sticky window
   - Dragging and opacity control
   - Zoom, rotate, mirror, reset to 1:1
-  - Annotation, OCR, context menu actions
-  - AI image editing and AI visual understanding
+  - Annotation and context menu actions
 - Long screenshot toolbar with floating preview
-- OCR result window
 - Global shortcuts
 - System tray menu
 - Chinese and English UI switching
@@ -59,7 +48,7 @@ See [LICENSE](./LICENSE).
 
 - C++17
 - Qt 6
-  - Core / Gui / Widgets / Network / Concurrent / LinguistTools
+  - Core / Gui / Widgets / Network / LinguistTools
 - CMake
 - Global shortcuts
   - Windows: `RegisterHotKey`
@@ -70,9 +59,9 @@ See [LICENSE](./LICENSE).
 - `src/app/`
   - App bootstrap, service wiring, and widget runtime management
 - `src/widgets/`
-  - Capture overlay, sticky windows, settings dialog, OCR result window, about dialog, and related UI
+  - Capture overlay, sticky windows, settings dialog, about dialog, and related UI
 - `src/viewmodel/`
-  - Business logic for capture, sticky images, long screenshot, OCR, storage, and AI
+  - Business logic for capture, sticky images, long screenshot, and storage
 - `src/model/`
   - Desktop snapshot and persisted app settings
 - `src/paint_board/shape/`
@@ -92,12 +81,9 @@ TZshot/
 │  ├─ model/
 │  ├─ viewmodel/
 │  ├─ paint_board/
-│  ├─ shortcut_key/
-│  ├─ ocr/
-│  └─ ai_call/
+│  └─ shortcut_key/
 ├─ i18n/
 ├─ resource/
-├─ thirdpart/
 └─ CMakeLists.txt
 ```
 
@@ -146,17 +132,6 @@ Run on Linux:
 ./build/TZshot
 ```
 
-## OCR Notes on Windows
-
-- On first configure or build, CMake will fetch and build `Leptonica` and `Tesseract`
-- Output is placed under `thirdpart/ocr-install`
-- This project does not auto-download `tessdata`
-- Please prepare and place these files manually
-  - `thirdpart/ocr-install/share/tessdata/chi_sim.traineddata`
-  - `thirdpart/ocr-install/share/tessdata/eng.traineddata`
-
-If they are missing, OCR will fail at runtime with `Tesseract Init failed: no usable tessdata found`.
-
 ## Default Shortcuts
 
 - `Alt + A`: Screenshot
@@ -166,17 +141,6 @@ If they are missing, OCR will fail at runtime with `Tesseract Init failed: no us
 
 ## Configuration (QSettings)
 
-- AI
-  - `AI/apiKey`
-  - `AI/selectedModel`
-- Vision
-  - `Vision/apiKey`
-  - `Vision/provider`
-  - `Vision/model`
-  - `Vision/proxyEnabled`
-  - `Vision/proxyType`
-  - `Vision/proxyHost`
-  - `Vision/proxyPort`
 - Shortcuts
   - `Shortcuts/screenshot`
   - `Shortcuts/screenshotSave`
@@ -186,16 +150,13 @@ If they are missing, OCR will fail at runtime with `Tesseract Init failed: no us
   - `App/language`
   - `ImageSaver/savePath`
 
-> **Security note:** `AI/apiKey` and `Vision/apiKey` are stored in **plaintext** via `QSettings` (on Windows, the registry under `HKCU\Software\...`); they are not encrypted at rest. On shared or untrusted machines, be aware of the exposure risk, and consider protecting them with an OS credential store (e.g. Windows DPAPI / Qt Keychain).
-
 ## Notes
 
 - Linux global shortcuts currently rely on X11 and do not yet cover native Wayland support
 - Floating overlay and sticky window experience is currently most complete on Windows
-- OCR and long screenshot flows still have room for more cross-platform refinement
 
 ## Contributing and Security
 
-- Do not commit real `API Key`s, tokens, or private data
+- Do not commit tokens or private data
 - Use `UTF-8 (no BOM)` and `LF` line endings when possible
 - When updating third-party dependencies, include their license notices

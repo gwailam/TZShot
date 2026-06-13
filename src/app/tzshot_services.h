@@ -8,13 +8,10 @@
 #include "model/desktop_snapshot.h"
 #include "shortcut_key/globalshortcut.h"
 #include "sticky_image_store.h"
-#include "viewmodel/ai_view_model.h"
-#include "viewmodel/ocr_view_model.h"
 #include "viewmodel/screenshot_view_model.h"
 #include "viewmodel/scroll_capture_view_model.h"
 #include "viewmodel/sticky_view_model.h"
 #include "viewmodel/storage_view_model.h"
-#include "viewmodel/vision_view_model.h"
 
 class TZShotServices : public QObject
 {
@@ -28,12 +25,9 @@ public:
     StickyImageStore& stickyImageStore() { return m_stickyImageStore; }
     ScreenshotViewModel& screenshotViewModel() { return m_screenshotViewModel; }
     StickyViewModel& stickyViewModel() { return m_stickyViewModel; }
-    AIViewModel& aiViewModel() { return m_aiViewModel; }
     StorageViewModel& storageViewModel() { return m_storageViewModel; }
     LanguageManager& languageManager() { return m_languageManager; }
     ScrollCaptureViewModel& scrollCaptureViewModel() { return m_scrollCaptureViewModel; }
-    OcrViewModel& ocrViewModel() { return m_ocrViewModel; }
-    VisionViewModel& visionViewModel() { return m_visionViewModel; }
     GlobalShortcut& globalShortcut() { return m_globalShortcut; }
 
 private:
@@ -42,12 +36,9 @@ private:
     StickyImageStore m_stickyImageStore;
     ScreenshotViewModel m_screenshotViewModel;
     StickyViewModel m_stickyViewModel;
-    AIViewModel m_aiViewModel;
     StorageViewModel m_storageViewModel;
     LanguageManager m_languageManager;
     ScrollCaptureViewModel m_scrollCaptureViewModel;
-    OcrViewModel m_ocrViewModel;
-    VisionViewModel m_visionViewModel;
     GlobalShortcut m_globalShortcut;
 };
 

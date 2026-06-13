@@ -3,7 +3,6 @@
 #include "widgets/magnifier_widget.h"
 #include "widgets/sticky_canvas_widget.h"
 #include "widgets/widget_window_bridge.h"
-#include "viewmodel/ocr_view_model.h"
 #include "viewmodel/screenshot_view_model.h"
 #include "viewmodel/sticky_view_model.h"
 #include "viewmodel/storage_view_model.h"
@@ -192,14 +191,12 @@ void syncOptionButtonState(const QVector<QToolButton *> &buttons,
 CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
                                            StickyViewModel *stickyViewModel,
                                            StorageViewModel *storageViewModel,
-                                           OcrViewModel *ocrViewModel,
                                            WidgetWindowBridge *widgetWindowBridge,
                                            QWidget *parent)
     : QWidget(parent)
     , m_screenCapture(screenCapture)
     , m_stickyViewModel(stickyViewModel)
     , m_storageViewModel(storageViewModel)
-    , m_ocrViewModel(ocrViewModel)
     , m_widgetWindowBridge(widgetWindowBridge)
 {
     m_annotationText.clear();
@@ -410,7 +407,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     m_copyButton = createToolbarButton(QStringLiteral(":/resource/img/lc_copy.svg"), tr("复制"), m_toolbar);
     m_saveButton = createToolbarButton(QStringLiteral(":/resource/img/lc_save.svg"), tr("保存"), m_toolbar);
     m_stickyButton = createToolbarButton(QStringLiteral(":/resource/img/lc_pin.svg"), tr("贴图"), m_toolbar);
-    m_ocrButton = createToolbarButton(QStringLiteral(":/resource/img/lc_ocr.svg"), tr("OCR"), m_toolbar);
     m_longCaptureButton = createToolbarButton(QStringLiteral(":/resource/img/lc_longshot.svg"), tr("长截图"), m_toolbar);
     m_cancelButton = createToolbarButton(QStringLiteral(":/resource/img/lc_x.svg"), tr("取消"), m_toolbar);
 
@@ -429,7 +425,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     toolbarLayout->addWidget(m_copyButton);
     toolbarLayout->addWidget(m_saveButton);
     toolbarLayout->addWidget(m_stickyButton);
-    toolbarLayout->addWidget(m_ocrButton);
     toolbarLayout->addWidget(m_longCaptureButton);
     auto *divider2 = new QFrame(m_toolbar);
     divider2->setObjectName(QStringLiteral("captureOverlayToolbarDivider"));
@@ -442,7 +437,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
     connect(m_copyButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Copy); });
     connect(m_saveButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Save); });
     connect(m_stickyButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Sticky); });
-    connect(m_ocrButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::Ocr); });
     connect(m_longCaptureButton, &QToolButton::clicked, this, [this]() { performAction(CaptureAction::LongCapture); });
     connect(m_cancelButton, &QToolButton::clicked, this, [this]() { finishCapture(); });
     connect(m_undoButton, &QToolButton::clicked, this, [this]() {
@@ -480,7 +474,6 @@ CaptureOverlayWidget::CaptureOverlayWidget(ScreenshotViewModel *screenCapture,
         m_copyButton,
         m_saveButton,
         m_stickyButton,
-        m_ocrButton,
         m_longCaptureButton,
         m_cancelButton
     };
@@ -1332,8 +1325,6 @@ void CaptureOverlayWidget::setDefaultAction(const QString &mode)
         m_defaultAction = CaptureAction::Save;
     } else if (mode == QStringLiteral("sticky")) {
         m_defaultAction = CaptureAction::Sticky;
-    } else if (mode == QStringLiteral("ocr")) {
-        m_defaultAction = CaptureAction::Ocr;
     } else {
         m_defaultAction = CaptureAction::Copy;
     }
@@ -1370,14 +1361,6 @@ void CaptureOverlayWidget::performAction(CaptureAction action)
         }
         break;
     }
-    case CaptureAction::Ocr:
-        if (m_ocrViewModel) {
-            const QImage image = m_screenCapture->captureRectToImage(globalRect);
-            if (!image.isNull()) {
-                m_ocrViewModel->recognize(image);
-            }
-        }
-        break;
     case CaptureAction::LongCapture:
         if (m_widgetWindowBridge) {
             m_widgetWindowBridge->requestLongCapture(globalRect);

@@ -11,8 +11,6 @@
 #include "paint_board/shape/shape_type.h"
 
 class StickyImageStore;
-class AIViewModel;
-class VisionViewModel;
 class QCheckBox;
 class QLabel;
 class QPlainTextEdit;
@@ -20,7 +18,6 @@ class QSpinBox;
 class QTimer;
 class QToolButton;
 class StickyCanvasWidget;
-class VisionResultWidget;
 
 class StickyPinWidget : public QWidget
 {
@@ -31,8 +28,6 @@ public:
                     const QRect &physicalRect,
                     const QImage &image,
                     StickyImageStore *store,
-                    AIViewModel *aiViewModel = nullptr,
-                    VisionViewModel *visionViewModel = nullptr,
                     QWidget *parent = nullptr);
     ~StickyPinWidget() override;
 
@@ -55,11 +50,6 @@ private:
     bool isAltOpacityAdjustActive(const QWheelEvent *event) const;
     void setContentOpacity(qreal value);
     void setZoomFactor(qreal value);
-    void openAiEditor();
-    void openVisionWindow();
-    void setAiLoading(bool loading);
-    void updateAiLoadingIcon();
-    void applyAiImage(const QString &oldImageUrl, const QString &newImageUrl);
     void releaseStoredImage();
     void showInlineTextEditor(const QPoint &point, const QString &initialText);
     void updateInlineTextEditorGeometry();
@@ -86,10 +76,7 @@ private:
     QSize m_baseImageDisplaySize;
     QSize m_imageDisplaySize;
     QPointer<StickyImageStore> m_store;
-    QPointer<AIViewModel> m_aiViewModel;
-    QPointer<VisionViewModel> m_visionViewModel;
     StickyCanvasWidget *m_canvas = nullptr;
-    VisionResultWidget *m_visionResultWidget = nullptr;
     QWidget *m_toolOptions = nullptr;
     QWidget *m_toolbar = nullptr;
     QLabel *m_zoomLabel = nullptr;
@@ -112,8 +99,6 @@ private:
     QToolButton *m_textButton = nullptr;
     QToolButton *m_numberButton = nullptr;
     QToolButton *m_undoButton = nullptr;
-    QToolButton *m_aiButton = nullptr;
-    QToolButton *m_visionButton = nullptr;
     QToolButton *m_copyButton = nullptr;
     QToolButton *m_saveButton = nullptr;
     QToolButton *m_toggleToolbarButton = nullptr;
@@ -131,11 +116,8 @@ private:
     int m_numberValue = 1;
     bool m_toolbarVisible = true;
     bool m_shadowVisible = true;
-    bool m_aiLoading = false;
-    int m_aiLoadingFrame = 0;
     qreal m_zoomFactor = 1.0;
     qreal m_contentOpacity = 1.0;
-    QTimer *m_aiLoadingTimer = nullptr;
     bool m_released = false;
 };
 

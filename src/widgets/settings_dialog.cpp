@@ -1,10 +1,7 @@
 #include "widgets/settings_dialog.h"
 
 #include "language_manager.h"
-#include "viewmodel/ai_view_model.h"
-#include "viewmodel/ocr_view_model.h"
 #include "viewmodel/storage_view_model.h"
-#include "viewmodel/vision_view_model.h"
 #include "shortcut_key/globalshortcut.h"
 
 #include <QComboBox>
@@ -183,19 +180,13 @@ protected:
 
 }
 
-SettingsDialog::SettingsDialog(AIViewModel *aiViewModel,
-                               VisionViewModel *visionViewModel,
-                               StorageViewModel *storageViewModel,
+SettingsDialog::SettingsDialog(StorageViewModel *storageViewModel,
                                LanguageManager *languageManager,
-                               OcrViewModel *ocrViewModel,
                                GlobalShortcut *globalShortcut,
                                QWidget *parent)
     : QDialog(parent)
-    , m_aiViewModel(aiViewModel)
-    , m_visionViewModel(visionViewModel)
     , m_storageViewModel(storageViewModel)
     , m_languageManager(languageManager)
-    , m_ocrViewModel(ocrViewModel)
     , m_globalShortcut(globalShortcut)
 {
     setObjectName(QStringLiteral("settingsDialog"));
@@ -321,129 +312,6 @@ QWidget *SettingsDialog::buildGeneralPage()
         layout->addWidget(label, row, 0);
     };
 
-    outer->addWidget(createSectionTitle(tr("大模型设置")));
-    {
-        auto *card = createCard();
-        auto *grid = new QGridLayout(card);
-        grid->setContentsMargins(16, 16, 16, 16);
-        grid->setHorizontalSpacing(12);
-        grid->setVerticalSpacing(12);
-
-        addRowLabel(grid, 0, tr("AI 服务商"), card);
-        m_modelCombo = new SettingsComboBox(card);
-        m_modelCombo->addItems({ tr("阿里云百炼"), tr("火山引擎") });
-        if (m_aiViewModel) m_modelCombo->setCurrentIndex(m_aiViewModel->selectedModel());
-        connect(m_modelCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int index) {
-            if (m_aiViewModel) {
-                m_aiViewModel->setSelectedModel(index);
-            }
-            if (m_visionViewModel) {
-                const int visionProvider = aiProviderToVisionProvider(index);
-                m_visionViewModel->setProvider(visionProvider);
-                populateVisionModelOptions(visionProvider, m_visionViewModel->model());
-            }
-        });
-        grid->addWidget(m_modelCombo, 0, 1, 1, 2);
-
-        addRowLabel(grid, 1, QStringLiteral("API Key"), card);
-        m_apiKeyEdit = new QLineEdit(card);
-        m_apiKeyEdit->setEchoMode(QLineEdit::PasswordEchoOnEdit);  // 遮蔽 API Key，避免旁观/录屏泄露
-        const QString sharedApiKey = m_aiViewModel && !m_aiViewModel->apiKey().isEmpty()
-            ? m_aiViewModel->apiKey()
-            : (m_visionViewModel ? m_visionViewModel->apiKey() : QString());
-        m_apiKeyEdit->setText(sharedApiKey);
-        grid->addWidget(m_apiKeyEdit, 1, 1);
-        auto *saveApi = new QPushButton(tr("保存"), card);
-        saveApi->setObjectName(QStringLiteral("primaryButton"));
-        connect(saveApi, &QPushButton::clicked, this, [this]() {
-            const QString apiKey = m_apiKeyEdit ? m_apiKeyEdit->text() : QString();
-            if (m_aiViewModel) {
-                m_aiViewModel->setApiKey(apiKey);
-            }
-            if (m_visionViewModel) {
-                m_visionViewModel->setApiKey(apiKey);
-            }
-            emit infoMessageRequested(tr("API Key 已保存"),
-                                      tr("AI 图像编辑和视觉理解已同步更新。"));
-        });
-        grid->addWidget(saveApi, 1, 2);
-
-        if (m_visionViewModel && m_modelCombo) {
-            m_modelCombo->setCurrentIndex(visionProviderToAiProvider(m_visionViewModel->provider()));
-        }
-
-        addRowLabel(grid, 2, tr("视觉模型"), card);
-        m_visionModelCombo = new SettingsComboBox(card);
-        m_visionModelCombo->setEditable(true);
-        populateVisionModelOptions(m_visionViewModel ? m_visionViewModel->provider()
-                                                     : aiProviderToVisionProvider(m_aiViewModel ? m_aiViewModel->selectedModel() : 0),
-                                   m_visionViewModel ? m_visionViewModel->model() : QString());
-        connect(m_visionModelCombo, &QComboBox::editTextChanged, this, [this](const QString &text) {
-            if (m_visionViewModel) {
-                m_visionViewModel->setModel(text);
-            }
-        });
-        grid->addWidget(m_visionModelCombo, 2, 1, 1, 2);
-
-        addRowLabel(grid, 3, tr("联网搜索"), card);
-        m_visionWebSearchCheck = new QCheckBox(tr("AI 理解启用联网搜索"), card);
-        if (m_visionViewModel) m_visionWebSearchCheck->setChecked(m_visionViewModel->webSearchEnabled());
-        connect(m_visionWebSearchCheck, &QCheckBox::toggled, this, [this](bool checked) {
-            if (m_visionViewModel) {
-                m_visionViewModel->setWebSearchEnabled(checked);
-                populateVisionModelOptions(m_visionViewModel->provider(), m_visionViewModel->model());
-            }
-        });
-        grid->addWidget(m_visionWebSearchCheck, 3, 1, 1, 2);
-
-        addRowLabel(grid, 4, tr("启用代理"), card);
-        m_visionProxyEnabledCheck = new QCheckBox(tr("视觉请求走代理"), card);
-        if (m_visionViewModel) m_visionProxyEnabledCheck->setChecked(m_visionViewModel->proxyEnabled());
-        connect(m_visionProxyEnabledCheck, &QCheckBox::toggled, this, [this](bool checked) {
-            if (m_visionViewModel) m_visionViewModel->setProxyEnabled(checked);
-            if (m_visionProxyTypeCombo) m_visionProxyTypeCombo->setEnabled(checked);
-            if (m_visionProxyHostEdit) m_visionProxyHostEdit->setEnabled(checked);
-            if (m_visionProxyPortSpin) m_visionProxyPortSpin->setEnabled(checked);
-        });
-        grid->addWidget(m_visionProxyEnabledCheck, 4, 1, 1, 2);
-
-        addRowLabel(grid, 5, tr("代理类型"), card);
-        m_visionProxyTypeCombo = new SettingsComboBox(card);
-        m_visionProxyTypeCombo->addItems({ QStringLiteral("HTTP"), QStringLiteral("SOCKS5") });
-        if (m_visionViewModel) m_visionProxyTypeCombo->setCurrentIndex(m_visionViewModel->proxyType());
-        connect(m_visionProxyTypeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int index) {
-            if (m_visionViewModel) m_visionViewModel->setProxyType(index);
-        });
-        grid->addWidget(m_visionProxyTypeCombo, 5, 1, 1, 2);
-
-        addRowLabel(grid, 6, tr("代理地址"), card);
-        m_visionProxyHostEdit = new QLineEdit(card);
-        m_visionProxyHostEdit->setPlaceholderText(QStringLiteral("127.0.0.1"));
-        if (m_visionViewModel) m_visionProxyHostEdit->setText(m_visionViewModel->proxyHost());
-        connect(m_visionProxyHostEdit, &QLineEdit::editingFinished, this, [this]() {
-            if (m_visionViewModel && m_visionProxyHostEdit) {
-                m_visionViewModel->setProxyHost(m_visionProxyHostEdit->text().trimmed());
-            }
-        });
-        grid->addWidget(m_visionProxyHostEdit, 6, 1, 1, 2);
-
-        addRowLabel(grid, 7, tr("代理端口"), card);
-        m_visionProxyPortSpin = new QSpinBox(card);
-        m_visionProxyPortSpin->setRange(1, 65535);
-        if (m_visionViewModel) m_visionProxyPortSpin->setValue(m_visionViewModel->proxyPort());
-        connect(m_visionProxyPortSpin, &QSpinBox::valueChanged, this, [this](int value) {
-            if (m_visionViewModel) m_visionViewModel->setProxyPort(value);
-        });
-        grid->addWidget(m_visionProxyPortSpin, 7, 1, 1, 2);
-
-        const bool proxyEnabled = m_visionViewModel && m_visionViewModel->proxyEnabled();
-        m_visionProxyTypeCombo->setEnabled(proxyEnabled);
-        m_visionProxyHostEdit->setEnabled(proxyEnabled);
-        m_visionProxyPortSpin->setEnabled(proxyEnabled);
-        outer->addWidget(card);
-    }
-
-    outer->addSpacing(8);
     outer->addWidget(createSectionTitle(tr("语言设置")));
     {
         auto *card = createCard();
@@ -503,91 +371,8 @@ QWidget *SettingsDialog::buildGeneralPage()
         outer->addWidget(card);
     }
 
-    outer->addSpacing(8);
-    outer->addWidget(createSectionTitle(tr("OCR 自检")));
-    {
-        auto *card = createCard();
-        auto *v = new QVBoxLayout(card);
-        v->setContentsMargins(12, 12, 12, 12);
-        v->setSpacing(10);
-
-        m_ocrSelfCheckText = new QTextEdit(card);
-        m_ocrSelfCheckText->setReadOnly(true);
-        m_ocrSelfCheckText->setMinimumHeight(120);
-        m_ocrSelfCheckText->setText(m_ocrViewModel && !m_ocrViewModel->selfCheckText().isEmpty()
-                                        ? m_ocrViewModel->selfCheckText()
-                                        : tr("点击“一键自检”查看 OCR 环境状态。"));
-        v->addWidget(m_ocrSelfCheckText);
-
-        auto *row = new QHBoxLayout;
-        auto *selfCheck = new QPushButton(tr("一键自检"), card);
-        selfCheck->setObjectName(QStringLiteral("primaryButton"));
-        connect(selfCheck, &QPushButton::clicked, this, [this]() {
-            if (m_ocrViewModel) m_ocrSelfCheckText->setText(m_ocrViewModel->runSelfCheck());
-        });
-        row->addWidget(selfCheck);
-
-        auto *openTess = new QPushButton(tr("打开 tessdata"), card);
-        openTess->setObjectName(QStringLiteral("secondaryButton"));
-        connect(openTess, &QPushButton::clicked, this, [this]() {
-            if (m_ocrViewModel && !m_ocrViewModel->openTessdataFolder()) {
-                m_ocrSelfCheckText->setText(m_ocrViewModel->runSelfCheck());
-            }
-        });
-        row->addWidget(openTess);
-        row->addStretch();
-        v->addLayout(row);
-        outer->addWidget(card);
-    }
-
     outer->addStretch();
     return container;
-}
-
-void SettingsDialog::populateVisionModelOptions(int provider, const QString &currentModel)
-{
-    if (!m_visionModelCombo) {
-        return;
-    }
-
-    const QString normalizedCurrent = currentModel.trimmed();
-    const bool webSearchEnabled = m_visionViewModel && m_visionViewModel->webSearchEnabled();
-    m_visionModelCombo->blockSignals(true);
-    m_visionModelCombo->clear();
-
-    if (provider == 1) {
-        if (webSearchEnabled) {
-            m_visionModelCombo->addItems({ QStringLiteral("qwen3-max-2026-01-23"),
-                                           QStringLiteral("qwen3.5-plus"),
-                                           QStringLiteral("qwen-plus") });
-        } else {
-            m_visionModelCombo->addItems({ QStringLiteral("qwen-vl-plus"),
-                                           QStringLiteral("qwen-vl-max") });
-        }
-    } else {
-        m_visionModelCombo->addItems({ QStringLiteral("doubao-seed-1-6-250615"),
-                                       QStringLiteral("doubao-vision-pro-32k-2410128") });
-    }
-
-    const QString finalModel = normalizedCurrent.isEmpty()
-        ? m_visionModelCombo->itemText(0)
-        : normalizedCurrent;
-
-    if (m_visionModelCombo->findText(finalModel) < 0) {
-        m_visionModelCombo->addItem(finalModel);
-    }
-    m_visionModelCombo->setCurrentText(finalModel);
-    m_visionModelCombo->blockSignals(false);
-}
-
-int SettingsDialog::aiProviderToVisionProvider(int aiProvider) const
-{
-    return aiProvider == 0 ? 1 : 0;
-}
-
-int SettingsDialog::visionProviderToAiProvider(int visionProvider) const
-{
-    return visionProvider == 1 ? 0 : 1;
 }
 
 QWidget *SettingsDialog::createHotkeyRow(const QString &labelText, int actionId, const QString &seq)

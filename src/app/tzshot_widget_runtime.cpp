@@ -4,16 +4,11 @@
 
 TZShotWidgetRuntime::TZShotWidgetRuntime(TZShotServices &services, QObject *parent)
     : QObject(parent)
-    , m_ocrResultWidget(&services.ocrViewModel())
     , m_captureOverlayWidget(&services.screenshotViewModel(),
                              &services.stickyViewModel(),
-                             &services.storageViewModel(),
-                             &services.ocrViewModel())
-    , m_settingsDialog(&services.aiViewModel(),
-                       &services.visionViewModel(),
-                       &services.storageViewModel(),
+                             &services.storageViewModel())
+    , m_settingsDialog(&services.storageViewModel(),
                        &services.languageManager(),
-                       &services.ocrViewModel(),
                        &services.globalShortcut())
     , m_aboutDialog()
     , m_longCaptureController(&services.scrollCaptureViewModel())

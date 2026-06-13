@@ -18,9 +18,7 @@
         <file>resource/img/app_icon.ico</file>
         <file>resource/img/tray_icon.svg</file>
         <file>resource/img/lc_close.svg</file>
-        <file>resource/img/lc_chat.svg</file>
         <file>resource/img/lc_send.svg</file>
-        <file>resource/img/lc_ocr.svg</file>
         <file>resource/img/lc_longshot.svg</file>
         <file>resource/img/lc_chevron_down.svg</file>
         <file>resource/qss/sticky_pin_widget.qss</file>

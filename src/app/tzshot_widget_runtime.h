@@ -7,7 +7,6 @@
 #include "widgets/about_dialog.h"
 #include "widgets/capture_overlay_widget.h"
 #include "widgets/long_capture_controller.h"
-#include "widgets/ocr_result_widget.h"
 #include "widgets/settings_dialog.h"
 #include "widgets/widget_window_bridge.h"
 
@@ -20,7 +19,6 @@ class TZShotWidgetRuntime : public QObject
 public:
     explicit TZShotWidgetRuntime(TZShotServices &services, QObject *parent = nullptr);
 
-    OcrResultWidget& ocrResultWidget() { return m_ocrResultWidget; }
     CaptureOverlayWidget& captureOverlayWidget() { return m_captureOverlayWidget; }
     SettingsDialog& settingsDialog() { return m_settingsDialog; }
     AboutDialog& aboutDialog() { return m_aboutDialog; }
@@ -29,7 +27,6 @@ public:
     TrayIconHelper& trayHelper() { return m_trayHelper; }
 
 private:
-    OcrResultWidget m_ocrResultWidget;
     CaptureOverlayWidget m_captureOverlayWidget;
     SettingsDialog m_settingsDialog;
     AboutDialog m_aboutDialog;

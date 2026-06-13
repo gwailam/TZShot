@@ -40,17 +40,6 @@ void TZShotApp::configureApplication() const
 
 void TZShotApp::setupConnections()
 {
-    connect(&m_services->ocrViewModel(), &OcrViewModel::isRecognizingChanged, this, [this]() {
-        if (m_services->ocrViewModel().isRecognizing()) {
-            m_runtime->ocrResultWidget().showAndActivate();
-        }
-    });
-    connect(&m_services->ocrViewModel(), &OcrViewModel::resultReady, this, [this](const QString &) {
-        m_runtime->ocrResultWidget().showAndActivate();
-    });
-    connect(&m_services->ocrViewModel(), &OcrViewModel::recognizeFailed, this, [this](const QString &errorMessage) {
-        m_runtime->trayHelper().showMessage(tr("OCR 识别失败"), errorMessage);
-    });
     connect(&m_runtime->settingsDialog(), &SettingsDialog::infoMessageRequested, this,
             [this](const QString &title, const QString &message) {
         m_runtime->trayHelper().showMessage(title, message);

@@ -7,8 +7,6 @@
 #include "sticky_image_store.h"
 
 class QScreen;
-class AIViewModel;
-class VisionViewModel;
 
 // StickyViewModel
 // ---------------
@@ -23,8 +21,6 @@ class StickyViewModel : public QObject
 
 public:
     explicit StickyViewModel(StickyImageStore &store, QObject *parent = nullptr);
-    void setAiViewModel(AIViewModel *aiViewModel);
-    void setVisionViewModel(VisionViewModel *visionViewModel);
 
     // 在 Windows 上直接创建 QWidget 贴图；其他平台通过 stickyReady 回退。
     Q_INVOKABLE void requestSticky(const QString &imageUrl, const QRect &imgRect);
@@ -51,8 +47,6 @@ private:
     QImage mergeLayers(const QString &imageUrl, const QImage &annotationLayer) const;
 
     StickyImageStore &m_store;
-    AIViewModel *m_aiViewModel = nullptr;
-    VisionViewModel *m_visionViewModel = nullptr;
 };
 
 #endif // STICKY_VIEW_MODEL_H
