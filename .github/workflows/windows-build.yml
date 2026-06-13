@@ -46,7 +46,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path dist -Force | Out-Null
           Copy-Item build/TZshot.exe dist/TZshot.exe -Force
-          windeployqt --release --qmldir . --no-translations --no-compiler-runtime --no-opengl-sw dist/TZshot.exe
+          windeployqt --release --no-translations --no-compiler-runtime --no-opengl-sw dist/TZshot.exe
 
       - name: Pack Zip
         shell: pwsh

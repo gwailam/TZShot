@@ -6,8 +6,6 @@
 #include <QImage>
 #include "sticky_image_store.h"
 
-class QScreen;
-
 // StickyViewModel
 // ---------------
 // 负责贴图会话的业务逻辑：
@@ -31,21 +29,12 @@ public:
     Q_INVOKABLE bool    saveImage(const QString &imageUrl, const QUrl &targetUrl);
     Q_INVOKABLE bool    copyImageToClipboard(const QString &imageUrl);
     Q_INVOKABLE QImage  getImageByUrl(const QString &imageUrl) const;
-    Q_INVOKABLE QSize   getImageSizeByUrl(const QString &imageUrl) const;
-    Q_INVOKABLE void    positionStickyWindow(QObject *windowObject, const QRect &imgRect) const;
-    Q_INVOKABLE void    resizeStickyWindow(QObject *windowObject, int physicalWidth, int physicalHeight) const;
-    Q_INVOKABLE bool    overwriteWithAnnotations(const QString &imageUrl, const QImage &annotationLayer);
-    Q_INVOKABLE bool    saveMergedImage(const QString &imageUrl, const QImage &annotationLayer, const QUrl &targetUrl);
-    Q_INVOKABLE bool    rotateImage(const QString &imageUrl, int degreesClockwise);
-    Q_INVOKABLE bool    mirrorImage(const QString &imageUrl, bool horizontal, bool vertical);
 
 signals:
     // 非 Windows 平台可监听此信号自行创建贴图窗口
     void stickyReady(const QString &imageUrl, const QRect &imgRect);
 
 private:
-    QImage mergeLayers(const QString &imageUrl, const QImage &annotationLayer) const;
-
     StickyImageStore &m_store;
 };
 

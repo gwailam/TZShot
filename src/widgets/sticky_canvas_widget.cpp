@@ -39,6 +39,7 @@ StickyCanvasWidget::StickyCanvasWidget(QWidget *parent)
 
 StickyCanvasWidget::~StickyCanvasWidget()
 {
+    finishCurrentShape();
     clearShapes();
 }
 
