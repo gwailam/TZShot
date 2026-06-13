@@ -212,7 +212,7 @@ void ScrollCaptureViewModel::finishSuccess(const QImage &result)
     result.save(savePath, "PNG");
 
     const QString saveDirPath = QFileInfo(savePath).absolutePath();
-    if (!saveDirPath.isEmpty()) {
+    if (AppSettings::openFolderAfterLongCapture() && !saveDirPath.isEmpty()) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(saveDirPath));
     }
 

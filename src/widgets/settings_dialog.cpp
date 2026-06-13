@@ -389,6 +389,23 @@ QWidget *SettingsDialog::buildGeneralPage()
         outer->addWidget(card);
     }
 
+    outer->addSpacing(8);
+    outer->addWidget(createSectionTitle(tr("长截图设置")));
+    {
+        auto *card = createCard();
+        auto *grid = new QGridLayout(card);
+        grid->setContentsMargins(16, 16, 16, 16);
+        grid->setHorizontalSpacing(12);
+        addRowLabel(grid, 0, tr("完成后"), card);
+        auto *openFolderCheck = new QCheckBox(tr("长截图完成后打开保存目录（结果已复制到剪贴板）"), card);
+        openFolderCheck->setChecked(AppSettings::openFolderAfterLongCapture());
+        connect(openFolderCheck, &QCheckBox::toggled, this, [](bool checked) {
+            AppSettings::setOpenFolderAfterLongCapture(checked);
+        });
+        grid->addWidget(openFolderCheck, 0, 1);
+        outer->addWidget(card);
+    }
+
     outer->addStretch();
     return container;
 }

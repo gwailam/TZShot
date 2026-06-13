@@ -85,3 +85,15 @@ void AppSettings::setConfirmCloseStickyWithAnnotations(bool enabled)
 {
     QSettings().setValue("Sticky/confirmCloseWithAnnotations", enabled);
 }
+
+// ── 长截图完成后打开保存目录 ──────────────────────────────────
+
+bool AppSettings::openFolderAfterLongCapture()
+{
+    return QSettings().value("ScrollCapture/openFolderAfterCapture", false).toBool();
+}
+
+void AppSettings::setOpenFolderAfterLongCapture(bool enabled)
+{
+    QSettings().setValue("ScrollCapture/openFolderAfterCapture", enabled);
+}

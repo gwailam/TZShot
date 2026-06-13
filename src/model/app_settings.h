@@ -29,6 +29,11 @@ public:
     static bool confirmCloseStickyWithAnnotations();
     static void setConfirmCloseStickyWithAnnotations(bool enabled);
 
+    // 长截图完成后是否自动打开保存目录（默认关闭）。
+    // 结果已复制到剪贴板，多数场景无需弹目录；同为静态读写 QSettings。
+    static bool openFolderAfterLongCapture();
+    static void setOpenFolderAfterLongCapture(bool enabled);
+
 private:
     QString m_language      = "zh_CN";
     QString m_savePath;
