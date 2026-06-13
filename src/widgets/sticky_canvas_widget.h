@@ -38,6 +38,11 @@ public:
     bool hasAnnotations() const { return !m_shapes.isEmpty(); }
     QImage compositedImage() const;
     QImage compositedImage(const QRect &displayRect) const;
+    // 将标注以「基准图的设备像素分辨率」合成到 baseImage 上并返回结果，
+    // 用于复制/保存时导出带标注的图片。无标注时原样返回 baseImage。
+    // 标注坐标位于基准图的逻辑像素空间，内部按 baseImage 的 devicePixelRatio
+    // 缩放，确保导出为原生分辨率且不错位。
+    QImage compositeOnto(const QImage &baseImage) const;
     // 将标注层（按当前 viewScale 缩放）绘制到外部 painter，
     // 供调用方以任意目标分辨率合成输出。
     void renderAnnotations(QPainter *painter) const;

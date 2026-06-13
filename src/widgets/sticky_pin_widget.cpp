@@ -530,9 +530,7 @@ StickyPinWidget::StickyPinWidget(const QString &imageUrl,
         }
     });
     connect(m_copyButton, &QToolButton::clicked, this, [this]() {
-        if (m_store) {
-            m_store->copyImageToClipboard(m_imageUrl);
-        }
+        copyToClipboard();
     });
     connect(m_saveButton, &QToolButton::clicked, this, [this]() {
         saveCurrentImage();
@@ -716,16 +714,14 @@ void StickyPinWidget::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu menu(this);
     QAction *copyAction = menu.addAction(tr("复制"));
-    QAction *saveAction = menu.addAction(tr("保存原图"));
+    QAction *saveAction = menu.addAction(tr("保存图片"));
     QAction *toggleAction = menu.addAction(m_toolbarVisible ? tr("隐藏工具栏") : tr("显示工具栏"));
     QAction *shadowAction = menu.addAction(m_shadowVisible ? tr("隐藏阴影") : tr("显示阴影"));
     menu.addSeparator();
     QAction *closeAction = menu.addAction(tr("关闭"));
     QAction *chosen = menu.exec(event->globalPos());
     if (chosen == copyAction) {
-        if (m_store) {
-            m_store->copyImageToClipboard(m_imageUrl);
-        }
+        copyToClipboard();
         return;
     }
     if (chosen == saveAction) {
@@ -1030,7 +1026,8 @@ void StickyPinWidget::releaseStoredImage()
 
 bool StickyPinWidget::saveCurrentImage()
 {
-    if (m_image.isNull()) {
+    const QImage target = currentExportImage();
+    if (target.isNull()) {
         return false;
     }
 
@@ -1044,7 +1041,37 @@ bool StickyPinWidget::saveCurrentImage()
         return false;
     }
 
-    return m_image.save(filePath);
+    return target.save(filePath);
+}
+
+QImage StickyPinWidget::currentExportImage() const
+{
+    // 含标注时导出「原图 + 标注」合成结果（原生分辨率）；无标注时返回原图。
+    if (m_canvas && m_canvas->hasAnnotations()) {
+        const QImage merged = m_canvas->compositeOnto(m_image);
+        if (!merged.isNull()) {
+            return merged;
+        }
+    }
+    return m_image;
+}
+
+void StickyPinWidget::copyToClipboard()
+{
+    // 有标注：将合成图直接写入剪贴板；
+    // 无标注：沿用 store 原有路径（保留其平台相关行为，如 Linux 选择剪贴板）。
+    if (m_canvas && m_canvas->hasAnnotations()) {
+        const QImage merged = m_canvas->compositeOnto(m_image);
+        if (!merged.isNull()) {
+            if (QClipboard *clipboard = QGuiApplication::clipboard()) {
+                clipboard->setImage(merged);
+                return;
+            }
+        }
+    }
+    if (m_store) {
+        m_store->copyImageToClipboard(m_imageUrl);
+    }
 }
 
 qreal StickyPinWidget::screenScaleForRect(const QRect &physicalRect) const

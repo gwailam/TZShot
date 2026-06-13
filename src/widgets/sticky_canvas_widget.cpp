@@ -228,6 +228,34 @@ void StickyCanvasWidget::renderAnnotations(QPainter *painter) const
     painter->restore();
 }
 
+QImage StickyCanvasWidget::compositeOnto(const QImage &baseImage) const
+{
+    // 无标注则原样返回，保持未标注贴图导出与原图完全一致。
+    if (baseImage.isNull() || m_shapes.isEmpty()) {
+        return baseImage;
+    }
+
+    const qreal dpr = baseImage.devicePixelRatio() > 0.0 ? baseImage.devicePixelRatio() : 1.0;
+
+    QImage result = baseImage.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    // 以原始设备像素为画布坐标，手动按 dpr 放大标注（标注坐标在逻辑像素空间）。
+    result.setDevicePixelRatio(1.0);
+
+    QPainter painter(&result);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter.scale(dpr, dpr);
+    for (Shape *shape : m_shapes) {
+        if (shape) {
+            shape->draw(&painter);
+        }
+    }
+    painter.end();
+
+    result.setDevicePixelRatio(dpr);
+    return result;
+}
+
 void StickyCanvasWidget::undo()
 {
     if (!m_shapes.isEmpty()) {

@@ -56,6 +56,8 @@ private:
     void submitInlineText();
     void cancelInlineText(bool restoreOriginal = true);
     bool saveCurrentImage();
+    void copyToClipboard();
+    QImage currentExportImage() const;
     qreal screenScaleForRect(const QRect &physicalRect) const;
     void applyNativePosition(const QRect &physicalRect);
     QPoint currentContentTopLeftPhysical() const;
