@@ -4,6 +4,7 @@
 #include "viewmodel/storage_view_model.h"
 #include "shortcut_key/globalshortcut.h"
 #include "model/app_settings.h"
+#include "app_version.h"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -237,7 +238,7 @@ SettingsDialog::SettingsDialog(StorageViewModel *storageViewModel,
     sideLayout->addWidget(m_navList);
     sideLayout->addStretch();
 
-    auto *version = new QLabel(QStringLiteral("v1.0.0"), sidePanel);
+    auto *version = new QLabel(QStringLiteral("v" TZSHOT_VERSION), sidePanel);
     version->setObjectName(QStringLiteral("settingsBrandText"));
     sideLayout->addWidget(version, 0, Qt::AlignHCenter);
 

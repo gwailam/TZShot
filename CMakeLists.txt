@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(TZshot VERSION 1.0 LANGUAGES CXX C)
+project(TZshot VERSION 1.1.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -43,6 +43,7 @@ set(SOURCES
     src/instance_activation.cpp
     src/instance_activation.h
     src/singleton.h
+    src/app_version.h
     src/widgets/about_dialog.cpp
     src/widgets/about_dialog.h
     src/widgets/sticky_pin_widget.cpp
@@ -145,8 +146,11 @@ target_include_directories(TZshot PRIVATE
 )
 
 # ── 编译定义 ──────────────────────────────────────────────
+# 版本号唯一真源:由上方 project(VERSION) 注入 TZSHOT_VERSION 宏,
+# 供 UI（about/settings）引用,避免散落硬编码导致漂移。
 target_compile_definitions(TZshot PRIVATE
     QT_DEPRECATED_WARNINGS
+    TZSHOT_VERSION="${PROJECT_VERSION}"
 )
 
 target_compile_definitions(TZshot PRIVATE

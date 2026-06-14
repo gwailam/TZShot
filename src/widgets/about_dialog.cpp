@@ -1,5 +1,7 @@
 #include "widgets/about_dialog.h"
 
+#include "app_version.h"
+
 #include <QFrame>
 #include <QGuiApplication>
 #include <QHBoxLayout>
@@ -42,7 +44,7 @@ AboutDialog::AboutDialog(QWidget *parent)
 
     layout->addSpacing(6);
 
-    auto *version = new QLabel(tr("版本 v1.0.0"), this);
+    auto *version = new QLabel(tr("版本 v%1").arg(QStringLiteral(TZSHOT_VERSION)), this);
     version->setAlignment(Qt::AlignCenter);
     version->setStyleSheet(QStringLiteral("font-size:13px; color:#64748B;"));
     layout->addWidget(version);

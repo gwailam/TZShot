@@ -3,7 +3,11 @@
 ; Build with:  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" packaging\tzshot.iss
 
 #define MyAppName "TZshot"
-#define MyAppVersion "1.0.0"
+; 版本号需与 CMakeLists.txt 的 project(VERSION) 保持一致(Inno 无法读取 CMake)。
+; 也可在构建脚本中以 ISCC /DMyAppVersion=x.y.z 传入覆盖此默认值。
+#ifndef MyAppVersion
+#define MyAppVersion "1.1.0"
+#endif
 #define MyAppPublisher "TZshot"
 #define MyAppExeName "TZshot.exe"
 #define StageDir "..\dist\app"
