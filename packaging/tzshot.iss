@@ -6,7 +6,7 @@
 ; 版本号需与 CMakeLists.txt 的 project(VERSION) 保持一致(Inno 无法读取 CMake)。
 ; 也可在构建脚本中以 ISCC /DMyAppVersion=x.y.z 传入覆盖此默认值。
 #ifndef MyAppVersion
-#define MyAppVersion "1.1.1"
+#define MyAppVersion "1.1.2"
 #endif
 #define MyAppPublisher "TZshot"
 #define MyAppExeName "TZshot.exe"
@@ -32,7 +32,9 @@ PrivilegesRequired=admin
 UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]
-Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+; 简体中文为 Inno 非官方语言包,各机器/CI 的 Inno 安装未必自带,
+; 故随仓库附带 packaging\ChineseSimplified.isl 并以相对路径引用,保证可复现。
+Name: "chinesesimplified"; MessagesFile: "ChineseSimplified.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
